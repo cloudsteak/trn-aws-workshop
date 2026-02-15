@@ -29,12 +29,31 @@ INSERT INTO quotes (text, author, category) VALUES
 ('A skálázhatóság nem opció, hanem elvárás.', 'Werner Vogels', 'cloud'),
 ('A jövő a szervermentes architektúráé.', 'AWS Lambda csapat', 'cloud'),
 ('Minden cég technológiai cég, csak még nem mindegyik tudja.', 'Watts S. Humphrey', 'cloud'),
+('Az infrastruktúra nem versenyelőny. Amit vele csinálsz, az az.', 'Werner Vogels', 'cloud'),
+('A felhő arról szól, hogyan csinálod a számítástechnikát, nem arról, hol.', 'Paul Maritz', 'cloud'),
+('A cloud computing nem csak trend, hanem az új normális.', 'Satya Nadella', 'cloud'),
+('A felhőben nem azért fizetsz, amit kiépítesz, hanem azért, amit használsz.', 'AWS', 'cloud'),
+('A felhő demokratizálja a vállalati szintű technológiához való hozzáférést.', 'Marc Benioff', 'cloud'),
+('A felhőbiztonság közös felelősség.', 'AWS', 'cloud'),
+('Gondolj nagyban, kezdj kicsiben, haladj gyorsan.', 'AWS', 'cloud'),
+('Automatizálj mindent, amit tudsz, aztán automatizálj még többet.', 'DevOps közösség', 'cloud'),
+('A felhő az innováció nagy lehetővé tevője.', 'Jeff Bezos', 'cloud'),
+('Az infrastruktúra mint kód nem opcionális, hanem elkerülhetetlen.', 'DevOps közösség', 'cloud'),
 -- Motivation
 ('A legjobb idő elkezdeni valamit 20 éve volt. A második legjobb idő most van.', 'Kínai közmondás', 'motivation'),
 ('Ne azt mérd, milyen messze vagy, hanem azt, honnan indultál.', 'Ismeretlen', 'motivation'),
 ('A kudarc nem az ellentéte a sikernek, hanem része annak.', 'Arianna Huffington', 'motivation'),
 ('Tedd a nehezet, amíg könnyű. Tedd a nagyot, amíg kicsi.', 'Lao-ce', 'motivation'),
-('Nem azért tanulunk, hogy tudjunk, hanem azért, hogy csinálhassunk.', 'Ismeretlen', 'motivation');
+('Nem azért tanulunk, hogy tudjunk, hanem azért, hogy csinálhassunk.', 'Ismeretlen', 'motivation'),
+('A siker nem végállomás, a kudarc nem végzetes: a folytatáshoz való bátorság számít.', 'Winston Churchill', 'motivation'),
+('Az egyetlen lehetetlen utazás az, amelyet soha nem kezdesz el.', 'Tony Robbins', 'motivation'),
+('A változás nehéz az elején, zűrzavaros a közepén, gyönyörű a végén.', 'Robin Sharma', 'motivation'),
+('Nem az számít, milyen lassan haladsz, amíg nem állsz meg.', 'Konfuciusz', 'motivation'),
+('A hiba csak akkor hiba, ha nem tanulsz belőle.', 'John Powell', 'motivation'),
+('A jövőt azok alakítják, akik hisznek álmaik szépségében.', 'Eleanor Roosevelt', 'motivation'),
+('Ne várd a tökéletes pillanatot, fogd meg a pillanatot és tedd tökéletessé.', 'Zoey Sayward', 'motivation'),
+('A tehetség visz a csúcsra, de a karakter tart ott.', 'John Wooden', 'motivation'),
+('Minden szakértő egykor kezdő volt.', 'Helen Hayes', 'motivation');
 
 -- Ellenőrzés
 SELECT category, COUNT(*) AS darab FROM quotes GROUP BY category;
