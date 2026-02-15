@@ -1,0 +1,385 @@
+# ☁️ AWS Workshop – Cloud Idézetek + AI Chatbot
+
+Egy napos, gyakorlati AWS képzés. A nap végére egy **működő webalkalmazást** hozunk létre,
+ami idézeteket jelenít meg adatbázisból és egy AI chatbotot is tartalmaz.
+
+---
+
+## 🏗️ Architektúra
+
+
+```mermaid
+graph LR
+    Browser["👤 Böngésző"]
+    EC2["🖥️ EC2Apache"]
+    APIGW["🌐 API Gateway"]
+    LambdaQ["⚡ Lambdaquotes"]
+    LambdaC["⚡ Lambdachat"]
+    RDS["🗄️ RDSMySQL"]
+    Bedrock["🤖 BedrockClaude AI"]
+
+    Browser --> EC2
+    EC2 --> APIGW
+    APIGW --> LambdaQ
+    APIGW --> LambdaC
+    LambdaQ --> RDS
+    LambdaC --> Bedrock
+
+    style Browser fill:#1e293b,stroke:#94a3b8,color:#f1f5f9
+    style EC2 fill:#1e3a5f,stroke:#38bdf8,color:#f1f5f9
+    style APIGW fill:#2d1b4e,stroke:#a78bfa,color:#f1f5f9
+    style LambdaQ fill:#1a3636,stroke:#4ade80,color:#f1f5f9
+    style LambdaC fill:#1a3636,stroke:#4ade80,color:#f1f5f9
+    style RDS fill:#3b1f1f,stroke:#f97316,color:#f1f5f9
+    style Bedrock fill:#3b1f3b,stroke:#f093fb,color:#f1f5f9
+```
+
+| Réteg | AWS szolgáltatás | Mappa |
+|-------|-----------------|-------|
+| Frontend | EC2 + Apache | `01-Webapp/` |
+| Backend | Lambda (Python) × 2 | `02-Lambda/` |
+| Adatbázis | RDS MySQL | `03-Database/` |
+| API | API Gateway | *(konzolban konfiguráljuk)* |
+| AI | Amazon Bedrock | *(konzolban konfiguráljuk)* |
+
+---
+
+## 📁 Projekt struktúra
+
+```
+.
+├── 01-Webapp/
+│   ├── index.html
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       ├── config.js          ← ⚠️ API URL beállítás
+│       └── app.js
+├── 02-Lambda/
+│   ├── quotes/
+│   │   └── lambda_handler.py  ← Idézetek API
+│   └── chat/
+│       └── lambda_handler.py  ← AI Chatbot
+├── 03-Database/
+│   └── init.sql               ← Tábla + 15 idézet
+├── LICENSE
+└── README.md                  ← Ez a fájl
+```
+
+---
+
+## 🎯 Haladási terv
+
+| # | Lépés | Működik utána? |
+|---|-------|----------------|
+| 1 | EC2 + Apache + frontend feltöltés | ❌ (nincs backend) |
+| 2 | Lambda function-ök létrehozása | ❌ (nincs API GW, nincs DB) |
+| 3 | API Gateway + config.js frissítés | ❌ (nincs DB) |
+| 4 | RDS MySQL + Lambda env vars | ✅ Idézetek működnek! |
+| 5 | Bedrock model access + IAM | ✅ AI chatbot is működik! |
+
+---
+
+## Előfeltételek
+
+- AWS account (free tier elég)
+- Régió: **eu-central-1** (Frankfurt)
+
+---
+
+## 1. lépés – EC2 + Apache (frontend)
+
+> 📂 Fájlok: `01-Webapp/`
+
+### 1.1 EC2 instance indítása
+
+AWS Console → **EC2** → **Launch instance**
+
+| Beállítás | Érték |
+|-----------|-------|
+| Name | `workshop-frontend` |
+| AMI | **Amazon Linux 2023** (free tier) |
+| Instance type | **t2.micro** (free tier) |
+| Key pair | Create new → `workshop-key` → Download! |
+| Security group | Create new |
+| → SSH (22) | My IP |
+| → HTTP (80) | **Anywhere** (0.0.0.0/0) |
+
+### 1.2 Csatlakozás
+
+EC2 → Instances → válaszd ki → **Connect** → **EC2 Instance Connect** → Connect
+
+### 1.3 Apache telepítése
+
+```bash
+sudo yum update -y
+sudo yum install -y httpd
+sudo systemctl start httpd
+sudo systemctl enable httpd
+```
+
+Teszt: `http://EC2_PUBLIC_IP` → Apache tesztoldal jelenik meg.
+
+### 1.4 Frontend feltöltése
+
+```bash
+sudo mkdir -p /var/www/html/css /var/www/html/js
+
+sudo nano /var/www/html/index.html        # ← 01-Webapp/index.html tartalma
+sudo nano /var/www/html/css/style.css      # ← 01-Webapp/css/style.css tartalma
+sudo nano /var/www/html/js/config.js       # ← 01-Webapp/js/config.js tartalma
+sudo nano /var/www/html/js/app.js          # ← 01-Webapp/js/app.js tartalma
+```
+
+Teszt: `http://EC2_PUBLIC_IP` → Az oldal megjelenik, de hibát dob (nincs backend még).
+
+---
+
+## 2. lépés – Lambda function-ök
+
+> 📂 Fájlok: `02-Lambda/`
+
+### 2.1 PyMySQL Layer készítése
+
+A quotes Lambda-nak kell a `pymysql` csomag. Készítsd el a saját gépeden vagy CloudShell-ben:
+
+```bash
+mkdir python
+pip install pymysql -t python/
+zip -r pymysql-layer.zip python/
+```
+
+Lambda → **Layers** → Create layer → Name: `pymysql` → Upload zip → Runtime: Python 3.12
+
+### 2.2 Lambda #1: Idézetek API
+
+1. Lambda → **Create function**
+   - Name: `cloud-quotes-api`
+   - Runtime: **Python 3.12**
+2. Kód: másold be a `02-Lambda/quotes/lambda_handler.py` tartalmát
+3. Layers → **Add a layer** → Custom layers → `pymysql`
+4. Configuration → **Environment variables**:
+
+| Kulcs | Érték |
+|-------|-------|
+| `DB_HOST` | ⏳ *A 4. lépésben kapjuk meg* |
+| `DB_USER` | `admin` |
+| `DB_PASSWORD` | ⏳ *A 4. lépésben adjuk meg* |
+| `DB_NAME` | `cloudquotes` |
+
+5. Configuration → General → **Timeout**: 30 sec
+6. Configuration → **VPC**: ⏳ *A 4. lépésben állítjuk be*
+
+### 2.3 Lambda #2: AI Chatbot
+
+1. Lambda → **Create function**
+   - Name: `cloud-chat-api`
+   - Runtime: **Python 3.12**
+2. Kód: másold be a `02-Lambda/chat/lambda_handler.py` tartalmát
+3. **NEM kell Layer** – a boto3 alapból elérhető
+4. **NEM kell VPC** – a Bedrock publikus endpoint
+5. **Timeout**: 30 sec
+6. IAM: ⏳ *Az 5. lépésben adjuk hozzá*
+
+---
+
+## 3. lépés – API Gateway
+
+> *(Nincs kódfájl – a konzolban konfiguráljuk)*
+
+### 3.1 API létrehozása
+
+API Gateway → Create API → **REST API** → Name: `cloud-quotes`
+
+### 3.2 Végpontok
+
+| Resource | Method | Lambda function | Proxy |
+|----------|--------|----------------|-------|
+| `/quotes` | GET | `cloud-quotes-api` | ✅ |
+| `/quotes/random` | GET | `cloud-quotes-api` | ✅ |
+| `/chat` | POST | `cloud-chat-api` | ✅ |
+
+Lépések:
+1. Resources → Create resource → `quotes` → Create method → GET → Lambda Proxy → `cloud-quotes-api`
+2. `/quotes` → Create resource → `random` → Create method → GET → Lambda Proxy → `cloud-quotes-api`
+3. Root `/` → Create resource → `chat` → Create method → POST → Lambda Proxy → `cloud-chat-api`
+
+### 3.3 CORS engedélyezése
+
+⚠️ Minden resource-ra: kiválasztod → **Enable CORS** → `*` → Enable
+
+### 3.4 Deploy
+
+Deploy API → Create new stage → `prod` → Deploy
+
+📋 Jegyezd fel az **Invoke URL**-t!
+
+### 3.5 ⚠️ Vissza az EC2-re: config.js frissítése
+
+```bash
+sudo nano /var/www/html/js/config.js
+```
+
+Cseréld ki az `XXXXXXXXXX`-et:
+
+```javascript
+API_BASE_URL: 'https://abc123xyz.execute-api.eu-central-1.amazonaws.com/prod',
+```
+
+---
+
+## 4. lépés – RDS MySQL adatbázis
+
+> 📂 Fájlok: `03-Database/`
+
+### 4.1 RDS instance létrehozása
+
+AWS Console → **RDS** → Create database
+
+| Beállítás | Érték |
+|-----------|-------|
+| Engine | **MySQL** 8.0 |
+| Template | **Free tier** ✅ |
+| DB instance identifier | `workshop-db` |
+| Master username | `admin` |
+| Master password | Válassz egyet és **jegyezd meg!** |
+| DB instance class | `db.t3.micro` |
+| Storage | 20 GB |
+| Public access | **Yes** ⚠️ (csak workshophoz!) |
+| Security group | Create new → `workshop-db-sg` |
+| Initial database name | `cloudquotes` |
+
+Create database → Várj 5-10 percet.
+
+### 4.2 Security Group
+
+EC2 → Security Groups → `workshop-db-sg` → Inbound → Edit:
+- Type: **MySQL/Aurora** (3306) → Source: **Anywhere** ⚠️
+
+### 4.3 SQL futtatás
+
+📋 Jegyezd fel az RDS **Endpoint**-ot (RDS → Databases → workshop-db → Connectivity).
+
+MySQL Workbench-ben vagy parancssorból:
+
+```bash
+mysql -h workshop-db.xxxxx.rds.amazonaws.com -u admin -p < 03-Database/init.sql
+```
+
+### 4.4 ⚠️ Vissza a Lambda-hoz: environment variables
+
+Lambda → `cloud-quotes-api` → Configuration → Environment variables:
+
+| Kulcs | Érték |
+|-------|-------|
+| `DB_HOST` | `workshop-db.xxxxx.rds.amazonaws.com` |
+| `DB_USER` | `admin` |
+| `DB_PASSWORD` | a te jelszavad |
+| `DB_NAME` | `cloudquotes` |
+
+Lambda → Configuration → **VPC** → Edit:
+- VPC: **Default VPC** (ugyanaz mint az RDS!)
+- Subnetek: válaszd ki az összeset
+- Security group: default
+
+### 4.5 Tesztelés
+
+Lambda test event:
+```json
+{ "httpMethod": "GET", "path": "/quotes", "queryStringParameters": null }
+```
+
+Webapp: `http://EC2_PUBLIC_IP` → 🎉 **Az idézetek megjelennek!**
+
+---
+
+## 5. lépés – AI Chatbot (Amazon Bedrock)
+
+> *(Nincs kódfájl – a Lambda kód a 2. lépésben már felkerült)*
+
+### 5.1 Model access engedélyezése
+
+1. **Amazon Bedrock** → Model access → Manage model access
+2. ✅ **Anthropic → Claude 3 Haiku**
+3. Save changes → Várj 1-2 percet
+
+### 5.2 IAM jogosultság a chat Lambda-hoz
+
+1. Lambda → `cloud-chat-api` → Configuration → Permissions → kattints a **Role name**-re
+2. IAM → **Add permissions** → **Attach policies**
+3. Keresés: `AmazonBedrockFullAccess` → Add
+
+Vagy minimális policy:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": "bedrock:InvokeModel",
+    "Resource": "arn:aws:bedrock:eu-central-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+  }]
+}
+```
+
+### 5.3 Tesztelés
+
+Lambda test event:
+```json
+{
+  "httpMethod": "POST",
+  "path": "/chat",
+  "body": "{\"message\": \"Mi az a Lambda?\"}"
+}
+```
+
+Webapp: `http://EC2_PUBLIC_IP` → jobb alsó sarok 🤖 → 🎉 **Az AI válaszol!**
+
+---
+
+## 🎉 Kész!
+
+A teljes alkalmazás működik:
+
+```
+Idézetek:  Böngésző → EC2 Apache → API GW → Lambda → RDS MySQL
+AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
+```
+
+---
+
+## 🧹 Takarítás (a workshop után!)
+
+1. **EC2**: Terminate instance
+2. **RDS**: Delete database (skip final snapshot)
+3. **Lambda**: Delete mindkét function + pymysql layer
+4. **API Gateway**: Delete API
+5. **Security Groups**: Töröld az egyedieket
+
+---
+
+## ❓ Gyakori problémák
+
+| Probléma | Megoldás |
+|----------|---------|
+| Lambda timeout (quotes) | Lambda ugyanabban a VPC-ben van mint az RDS? |
+| CORS hiba böngészőben | API GW → Enable CORS mindenhol → Deploy újra |
+| RDS connection refused | Security Group 3306 port nyitva? |
+| Bedrock access denied | Model access engedélyezve? IAM policy hozzáadva? |
+| Webapp nem tölt be | Ellenőrizd a `js/config.js` API URL-t |
+| Apache nem indul | `sudo systemctl status httpd` |
+
+---
+
+## 💰 Költségek
+
+| Szolgáltatás | Free tier | Becsült költség |
+|-------------|-----------|----------------|
+| EC2 t2.micro | ✅ 12 hó | $0 |
+| RDS db.t3.micro | ✅ 12 hó | $0 |
+| Lambda | ✅ 1M kérés/hó | $0 |
+| API Gateway | ✅ 1M kérés/hó | $0 |
+| Bedrock Haiku | ❌ Pay-per-use | ~$0.01–0.05 |
+
+---
+
+*Készítette: Cloud Mentor – AWS Workshop*
