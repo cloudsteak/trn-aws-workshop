@@ -83,6 +83,7 @@ graph LR
 
 - AWS account (free tier elég)
 - Régió: **eu-central-1** (Frankfurt)
+- **DBeaver Community** (adatbázis kezeléshez) – https://dbeaver.io/download/
 
 ---
 
@@ -126,7 +127,9 @@ Teszt: `http://EC2_PUBLIC_IP` → Apache tesztoldal jelenik meg.
 A fájlokat közvetlenül a GitHub repóból töltjük le – így nincs kódolási probléma:
 
 ```bash
-REPO="https://raw.githubusercontent.com/GITHUB_USER/REPO_NAME/main/01-Webapp"
+REPO="https://raw.githubusercontent.com/cloudsteak/trn-aws-workshop/CMP-5-Init/01-Webapp"
+
+
 
 sudo mkdir -p /var/www/html/css /var/www/html/js
 
@@ -150,6 +153,7 @@ Teszt: `http://EC2_PUBLIC_IP` → Az oldal megjelenik. A health dashboard piros 
 
 A quotes Lambda-nak kell a `pymysql` csomag. Futtasd a repóban található scriptet
 (Windows, Mac, Linux – mindenhol működik, csak Python kell):
+
 ```bash
 python 02-Lambda/build_layer.py
 ```
@@ -184,7 +188,7 @@ Lambda → **Layers** → Create layer → Name: `pymysql` → Upload: `pymysql-
 1. Lambda → **Create function**
    - Name: `cloud-chat-api`
    - Runtime: **Python 3.12**
-2. Create function 
+2. Create function
 3. Kód: másold be a `02-Lambda/chat/lambda_handler.py` tartalmát
 4. **NEM kell Layer** – a boto3 alapból elérhető
 5. **NEM kell VPC** – a Bedrock publikus endpoint
@@ -228,7 +232,7 @@ Deploy API → Create new stage → `prod` → Deploy
 
 📋 Jegyezd fel az **Invoke URL**-t!
 
-### 3.6 ⚠️ Vissza az EC2-re: config.js frissítése
+### 3.5 ⚠️ Vissza az EC2-re: config.js frissítése
 
 ```bash
 sudo nano /var/www/html/js/config.js
@@ -257,7 +261,7 @@ AWS Console → **RDS** → Create database
 | DB instance identifier | `quotes-db` |
 | Master username | `admin` |
 | Master password | Válassz egyet és **jegyezd meg!** |
-| DB instance class | `db.t3.micro` |
+| DB instance class | `db.t4g.micro` |
 | Storage | 20 GB |
 | Public access | **Yes** ⚠️ (csak képzéshez!) |
 | Security group | Create new → `quotes-db-sg` |
@@ -270,23 +274,55 @@ Create database → Várj 5-10 percet.
 EC2 → Security Groups → `quotes-db-sg` → Inbound → Edit:
 - Type: **MySQL/Aurora** (3306) → Source: **Anywhere** ⚠️
 
-### 4.3 SQL futtatás
+### 4.3 Csatlakozás DBeaver-rel
 
-📋 Jegyezd fel az RDS **Endpoint**-ot (RDS → Databases → quotes-db → Connectivity).
+📋 Jegyezd fel az RDS **Endpoint**-ot: RDS → Databases → `quotes-db` → Connectivity & security.
 
-MySQL Workbench-ben vagy parancssorból:
+#### DBeaver connection beállítása
 
-```bash
-mysql -h quotes-db.xxxxx.rds.amazonaws.com -u admin -p < 03-Database/init.sql
+1. DBeaver → **New Database Connection** → MySQL
+2. **Main tab**:
+
+| Mező | Érték |
+|------|-------|
+| Server Host | `quotes-db.xxxxx.eu-central-1.rds.amazonaws.com` |
+| Port | `3306` |
+| Database | `cloudquotes` |
+| Username | `admin` |
+| Password | a te jelszavad |
+
+3. **SSL tab** – kötelező az RDS-hez:
+
+| Beállítás | Érték |
+|-----------|-------|
+| Use SSL | ✅ |
+| Require SSL | ✅ |
+| Verify server certificate | ✅ |
+| CA Certificate | `global-bundle.pem` |
+
+A CA tanúsítványt töltsd le innen:
+```
+https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 ```
 
-### 4.4 ⚠️ Vissza a Lambda-hoz: environment variables
+4. **Test Connection** → Ha zöld, minden rendben!
+
+### 4.4 SQL futtatása DBeaver-ben
+
+1. A bal oldali fa struktúrában kattints a `cloudquotes` adatbázisra
+2. **Jobb klikk** → **SQL Editor** → **Open SQL Script**
+3. Nyisd meg az `03-Database/init.sql` fájlt (File → Open File, vagy másold be a tartalmát)
+4. **Fontos**: az editor tetején ellenőrizd, hogy a `cloudquotes` adatbázis van kiválasztva!
+5. **Execute** (▶️ gomb vagy Ctrl+Enter) – az összes parancs lefut
+6. Ellenőrzés: a Results panelen látod a kategóriánkénti darabszámot (5-5-5)
+
+### 4.5 ⚠️ Vissza a Lambda-hoz: environment variables
 
 Lambda → `cloud-quotes-api` → Configuration → Environment variables:
 
 | Kulcs | Érték |
 |-------|-------|
-| `DB_HOST` | `quotes-db.xxxxx.rds.amazonaws.com` |
+| `DB_HOST` | `quotes-db.xxxxx.eu-central-1.rds.amazonaws.com` |
 | `DB_USER` | `admin` |
 | `DB_PASSWORD` | a te jelszavad |
 | `DB_NAME` | `cloudquotes` |
@@ -296,14 +332,11 @@ Lambda → Configuration → **VPC** → Edit:
 - Subnetek: válaszd ki az összeset
 - Security group: default
 
-### 4.5 Tesztelés
+### 4.6 Tesztelés
 
-Lambda test event:
-```json
-{ "httpMethod": "GET", "path": "/quotes", "queryStringParameters": null }
-```
+Nyisd meg a webapp-ot a böngészőben: `http://EC2_PUBLIC_IP`
 
-Webapp: `http://EC2_PUBLIC_IP` → 🎉 **Az idézetek megjelennek!**
+🎉 **Az idézetek megjelennek!** A health dashboard-on a Lambda (quotes) és RDS zöldre vált.
 
 ---
 
@@ -313,9 +346,16 @@ Webapp: `http://EC2_PUBLIC_IP` → 🎉 **Az idézetek megjelennek!**
 
 ### 5.1 Model access engedélyezése
 
-1. **Amazon Bedrock** → Model access → Manage model access
-2. ✅ **Anthropic → Claude 3 Haiku**
-3. Save changes → Várj 1-2 percet
+1. **Amazon Bedrock** → **Model catalog** (a bal oldali menüben)
+2. Keresés: **Anthropic** → **Claude 3 Haiku**
+3. **Request model access** → Enable
+
+> ⚠️ Az Anthropic első használatkor megköveteli a use case leírását:
+> *"Anthropic requires first-time customers to submit use case details before invoking a model,
+> once per account or once at the organization's management account."*
+>
+> Kattints a **Submit use case details** gombra és töltsd ki a rövid kérdőívet.
+> Az információ az Anthropic-kal lesz megosztva. Ez egyszer kell, utána az összes Anthropic modell elérhető.
 
 ### 5.2 IAM jogosultság a chat Lambda-hoz
 
@@ -337,16 +377,13 @@ Vagy minimális policy:
 
 ### 5.3 Tesztelés
 
-Lambda test event:
-```json
-{
-  "httpMethod": "POST",
-  "path": "/chat",
-  "body": "{\"message\": \"Mi az a Lambda?\"}"
-}
-```
+Nyisd meg a webapp-ot: `http://EC2_PUBLIC_IP` → jobb alsó sarok 🤖 → kérdezz valamit!
 
-Webapp: `http://EC2_PUBLIC_IP` → jobb alsó sarok 🤖 → 🎉 **Az AI válaszol!**
+🎉 **Az AI válaszol!** A health dashboard-on a Bedrock is zöldre vált.
+
+> 💡 **Megjegyzés**: A chatbotnak nincs memóriája – minden üzenet független kérés a Bedrock felé.
+> Memóriát (konverzáció-előzmények) DynamoDB-vel lehetne implementálni, de a cél most az volt,
+> hogy lássuk milyen **egyszerű egy AI chatbotot összerakni** AWS-en.
 
 ---
 
@@ -378,7 +415,8 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 | Lambda timeout (quotes) | Lambda ugyanabban a VPC-ben van mint az RDS? |
 | CORS hiba böngészőben | API GW → Enable CORS mindenhol → Deploy újra |
 | RDS connection refused | Security Group 3306 port nyitva? |
-| Bedrock access denied | Model access engedélyezve? IAM policy hozzáadva? |
+| DBeaver SSL hiba | CA Certificate beállítva? `global-bundle.pem` letöltve? |
+| Bedrock access denied | Model access engedélyezve? IAM policy hozzáadva? Use case kitöltve? |
 | Webapp nem tölt be | Ellenőrizd a `js/config.js` API URL-t |
 | Apache nem indul | `sudo systemctl status httpd` |
 
@@ -388,9 +426,8 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 
 | Szolgáltatás | Free tier | Becsült költség |
 |-------------|-----------|----------------|
-| EC2 t2.micro | ✅ 12 hó | $0 |
-| RDS db.t3.micro | ✅ 12 hó | $0 |
+| EC2 t3.micro | ✅ 12 hó | $0 |
+| RDS db.t4g.micro | ✅ 12 hó | $0 |
 | Lambda | ✅ 1M kérés/hó | $0 |
 | API Gateway | ✅ 1M kérés/hó | $0 |
 | Bedrock Haiku | ❌ Pay-per-use | ~$0.01–0.05 |
-

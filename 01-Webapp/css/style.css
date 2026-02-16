@@ -90,6 +90,16 @@ body {
 .btn-secondary:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
 .btn-secondary.active { background: rgba(56, 189, 248, 0.15); border-color: var(--accent); color: var(--accent); }
 .section-title { font-size: 1.5rem; margin-bottom: 20px; text-align: center; }
+.quotes-collapsible { margin-bottom: 40px; }
+.quotes-collapsible summary {
+    cursor: pointer; list-style: none; user-select: none;
+}
+.quotes-collapsible summary::-webkit-details-marker { display: none; }
+.quotes-collapsible summary::after {
+    content: ' ▸'; font-size: 0.9rem; color: var(--text-secondary);
+}
+.quotes-collapsible[open] summary::after { content: ' ▾'; }
+.quotes-collapsible .quotes-grid { margin-top: 20px; }
 .quotes-grid { display: grid; gap: 16px; margin-bottom: 40px; }
 .mini-card {
     background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06);
