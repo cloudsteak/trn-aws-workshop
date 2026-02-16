@@ -99,7 +99,7 @@ body {
 .mini-card .quote-text { font-size: 1.05rem; margin-bottom: 12px; }
 .arch-section {
     background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 24px; padding: 40px; text-align: center;
+    border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;
 }
 .arch-section h2 { font-size: 1.5rem; margin-bottom: 30px; }
 .arch-flow { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -113,19 +113,40 @@ body {
 .arch-box .sub { color: var(--text-secondary); font-size: 0.7rem; margin-top: 4px; }
 .arch-arrow { font-size: 1.3rem; color: var(--accent); }
 .arch-label { color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px; }
-.status-bar { margin-top: 40px; text-align: center; color: var(--text-secondary); font-size: 0.8rem; }
-.status-dot {
-    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    background: #22c55e; margin-right: 6px; animation: blink 2s ease-in-out infinite;
-}
-.status-dot.error { background: #ef4444; animation: none; }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 .error-msg {
     background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: 12px; padding: 16px 20px; color: #fca5a5;
     font-size: 0.9rem; text-align: center; margin-bottom: 20px; display: none;
 }
 .error-msg.visible { display: block; }
+
+/* ===== Health Dashboard ===== */
+.health-section {
+    background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px; padding: 40px; text-align: center;
+}
+.health-section h2 { font-size: 1.5rem; margin-bottom: 8px; }
+.health-subtitle { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 24px; }
+.health-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px; text-align: left;
+}
+.health-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; padding: 16px 20px; transition: all 0.3s;
+}
+.h-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.h-name { font-weight: 600; font-size: 0.88rem; }
+.h-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #475569; flex-shrink: 0;
+    transition: background 0.3s;
+}
+.h-dot.ok { background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5); }
+.h-dot.err { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+.h-detail { font-size: 0.75rem; color: var(--text-secondary); padding-left: 20px; }
+
+/* ===== CHATBOT ===== */
 .chat-fab {
     position: fixed; bottom: 28px; right: 28px; z-index: 1000;
     width: 64px; height: 64px; border-radius: 50%; border: none;
@@ -209,6 +230,7 @@ body {
     .quote-text { font-size: 1.2rem; }
     .arch-flow { flex-direction: column; }
     .arch-arrow { transform: rotate(90deg); }
+    .health-grid { grid-template-columns: 1fr; }
     .chat-window { width: calc(100vw - 32px); right: 16px; bottom: 96px; }
     .chat-fab { bottom: 20px; right: 20px; }
 }

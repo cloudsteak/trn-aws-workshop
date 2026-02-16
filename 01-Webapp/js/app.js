@@ -1,3 +1,69 @@
+// ==================== HEALTH CHECK ====================
+async function checkHealth() {
+    const components = {
+        ec2:       { el: document.getElementById('health-ec2'),       status: true, label: 'EC2 + Apache' },
+        apiGw:     { el: document.getElementById('health-apigw'),     status: false, label: 'API Gateway' },
+        lambdaQ:   { el: document.getElementById('health-lambda-q'),  status: false, label: 'Lambda (quotes)' },
+        lambdaC:   { el: document.getElementById('health-lambda-c'),  status: false, label: 'Lambda (chat)' },
+        rds:       { el: document.getElementById('health-rds'),       status: false, label: 'RDS MySQL' },
+        bedrock:   { el: document.getElementById('health-bedrock'),   status: false, label: 'Bedrock AI' },
+    };
+
+    // EC2 mindig OK ha az oldal betöltődött
+    setHealth(components.ec2, true);
+
+    // Quotes Lambda + API GW + RDS
+    try {
+        const res = await fetch(CONFIG.QUOTES_URL + '/health');
+        if (res.ok) {
+            setHealth(components.apiGw, true);
+            const data = await res.json();
+            if (data.lambda) setHealth(components.lambdaQ, true);
+            if (data.database) {
+                setHealth(components.rds, true, data.quote_count + ' idézet');
+            } else {
+                setHealth(components.rds, false, data.database_error || 'Nincs kapcsolat');
+            }
+        } else {
+            setHealth(components.apiGw, false, 'HTTP ' + res.status);
+        }
+    } catch (e) {
+        // Ha CORS hiba vagy network error → API GW nem elérhető
+        if (CONFIG.API_BASE_URL.includes('XXXXXXXXXX')) {
+            setHealth(components.apiGw, false, 'config.js nincs beállítva');
+        } else {
+            setHealth(components.apiGw, false, e.message);
+        }
+    }
+
+    // Chat Lambda + Bedrock
+    try {
+        const res = await fetch(CONFIG.CHAT_URL + '/health');
+        if (res.ok) {
+            // Ha API GW még nem volt OK, most az
+            if (!components.apiGw.status) setHealth(components.apiGw, true);
+            const data = await res.json();
+            if (data.lambda) setHealth(components.lambdaC, true);
+            if (data.bedrock) {
+                setHealth(components.bedrock, true);
+            } else {
+                setHealth(components.bedrock, false, data.bedrock_error || 'Nincs hozzáférés');
+            }
+        }
+    } catch (e) {
+        // Chat Lambda nem elérhető – nem baj, lehet hogy a /chat route még nincs
+    }
+}
+
+function setHealth(comp, ok, detail) {
+    if (!comp.el) return;
+    comp.status = ok;
+    const dot = comp.el.querySelector('.h-dot');
+    const txt = comp.el.querySelector('.h-detail');
+    dot.className = 'h-dot ' + (ok ? 'ok' : 'err');
+    if (txt) txt.textContent = detail || (ok ? 'Elérhető' : 'Nem elérhető');
+}
+
 // ==================== QUOTES ====================
 let currentCategory = '';
 
@@ -34,15 +100,14 @@ function showQuote(q) {
 
 function showError(msg) {
     const el = document.getElementById('errorMsg');
+    if (!el) return;
     el.textContent = '⚠️ ' + msg;
     el.classList.add('visible');
-    document.getElementById('statusDot').classList.add('error');
-    document.getElementById('statusText').textContent = 'Hiba – ellenőrizd a js/config.js fájlt!';
 }
 
 function hideError() {
-    document.getElementById('errorMsg').classList.remove('visible');
-    document.getElementById('statusDot').classList.remove('error');
+    const el = document.getElementById('errorMsg');
+    if (el) el.classList.remove('visible');
 }
 
 function renderList(quotes) {
@@ -63,13 +128,33 @@ async function loadRandomQuote() {
 async function loadAll(category) {
     try {
         hideError();
-        const quotes = await fetchQuotes(category);
-        renderList(quotes);
-        document.getElementById('statusDot').classList.remove('error');
-        document.getElementById('statusText').textContent =
-            'Kapcsolódva ✓ | ' + quotes.length + ' idézet';
-        if (quotes.length > 0) showQuote(quotes[Math.floor(Math.random() * quotes.length)]);
-    } catch (e) { showError('Nem sikerült betölteni: ' + e.message); }
+        const data = await fetchQuotes(category);
+
+        // Ha a Lambda fut de nincs DB → status üzenet jön vissza
+        if (data.status === 'no_db' || data.status === 'db_error') {
+            const qt = document.getElementById('quoteText');
+            const qa = document.getElementById('quoteAuthor');
+            const qc = document.getElementById('quoteCategory');
+            const qg = document.getElementById('quotesGrid');
+            if (qt) qt.textContent = data.message;
+            if (qa) qa.textContent = '';
+            if (qc) qc.style.display = 'none';
+            if (qg) qg.innerHTML = '';
+            return;
+        }
+
+        renderList(data);
+        if (data.length > 0) showQuote(data[Math.floor(Math.random() * data.length)]);
+    } catch (e) {
+        const qt = document.getElementById('quoteText');
+        const qa = document.getElementById('quoteAuthor');
+        if (CONFIG.API_BASE_URL.includes('XXXXXXXXXX')) {
+            if (qt) qt.textContent = 'Az API Gateway URL nincs beállítva a config.js-ben';
+            if (qa) qa.textContent = '';
+        } else {
+            showError('Nem sikerült betölteni: ' + e.message);
+        }
+    }
 }
 
 function filterCategory(btn) {
@@ -130,4 +215,7 @@ async function sendChat() {
 }
 
 // ==================== INIT ====================
-document.addEventListener('DOMContentLoaded', () => loadAll(''));
+document.addEventListener('DOMContentLoaded', () => {
+    checkHealth();
+    loadAll('');
+});

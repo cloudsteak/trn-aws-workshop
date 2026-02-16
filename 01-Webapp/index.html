@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>☁️ Cloud Idézetek</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -18,7 +18,7 @@
         <div class="header">
             <div class="header-icon">☁️</div>
             <h1>Cloud Idézetek</h1>
-            <p>Tech és Cloud idézetek – AWS-sel megvalósítva</p>
+            <p>Inspiráló tech idézetek – AWS-sel megvalósítva</p>
             <div class="tech-badges">
                 <span class="badge">🖥️ EC2 + Apache</span>
                 <span class="badge">⚡ Lambda</span>
@@ -48,6 +48,7 @@
         <h2 class="section-title">📚 Összes idézet</h2>
         <div class="quotes-grid" id="quotesGrid"></div>
 
+        <!-- Architecture -->
         <div class="arch-section">
             <h2>🏗️ Architektúra</h2>
             <p class="arch-label">Idézetek:</p>
@@ -74,12 +75,41 @@
             </div>
         </div>
 
-        <div class="status-bar">
-            <span class="status-dot" id="statusDot"></span>
-            <span id="statusText">Kapcsolódás...</span>
+        <!-- Health Dashboard -->
+        <div class="health-section">
+            <h2>📡 Szolgáltatások állapota</h2>
+            <p class="health-subtitle">Minden komponens állapota valós időben</p>
+            <div class="health-grid">
+                <div class="health-card" id="health-ec2">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">🖥️ EC2 + Apache</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+                <div class="health-card" id="health-apigw">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">🌐 API Gateway</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+                <div class="health-card" id="health-lambda-q">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">⚡ Lambda (quotes)</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+                <div class="health-card" id="health-lambda-c">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">⚡ Lambda (chat)</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+                <div class="health-card" id="health-rds">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">🗄️ RDS MySQL</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+                <div class="health-card" id="health-bedrock">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">🤖 Bedrock AI</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="checkHealth()" style="margin-top:16px;">🔄 Újra ellenőrzés</button>
         </div>
     </div>
 
+    <!-- Floating chatbot -->
     <button class="chat-fab" id="chatFab" onclick="toggleChat()">🤖</button>
     <div class="chat-window" id="chatWindow">
         <div class="chat-header">
