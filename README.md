@@ -8,7 +8,7 @@ Egy napos, gyakorlati AWS képzés. A nap végére egy **működő webalkalmazá
 
 
 ```mermaid
-graph LR
+graph TD
     Browser["👤 Böngésző"]
     EC2["🖥️ EC2 + Apache"]
     APIGW["🌐 API Gateway"]
