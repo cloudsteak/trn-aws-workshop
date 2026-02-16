@@ -10,12 +10,12 @@ ami idézeteket jelenít meg adatbázisból és egy AI chatbotot is tartalmaz.
 ```mermaid
 graph TD
     Browser["Böngésző"]
-    EC2["Frontend<br/>EC2 + Apache"]
+    EC2["Frontend:<br/>EC2 + Apache"]
     APIGW["API Gateway"]
-    LambdaQ["Backend<br/>Lambda quotes"]
-    LambdaC["Backend<br/>Lambda chat"]
-    RDS["Database<br/>RDS MySQL"]
-    Bedrock["AI<br/>Bedrock Claude AI"]
+    LambdaQ["Backend:<br/>Lambda quotes"]
+    LambdaC["Backend:<br/>Lambda chat"]
+    RDS["Database:<br/>RDS MySQL"]
+    Bedrock["AI:<br/>Bedrock Claude AI"]
 
     Browser --> EC2
     EC2 --> APIGW
