@@ -142,24 +142,26 @@ Teszt: `http://EC2_PUBLIC_IP` → Az oldal megjelenik, de hibát dob (nincs back
 
 ### 2.1 PyMySQL Layer készítése
 
-A quotes Lambda-nak kell a `pymysql` csomag. Készítsd el a saját gépeden vagy CloudShell-ben:
-
+A quotes Lambda-nak kell a `pymysql` csomag. Futtasd a repóban található scriptet
+(Windows, Mac, Linux – mindenhol működik, csak Python kell):
 ```bash
-mkdir python
-pip install pymysql -t python/
-zip -r pymysql-layer.zip python/
+python 02-Lambda/build_layer.py
 ```
 
-Lambda → **Layers** → Create layer → Name: `pymysql` → Upload zip → Runtime: Python 3.12
+Eredmény: `pymysql-layer.zip`
+
+Lambda → **Layers** → Create layer → Name: `pymysql` → Upload: `pymysql-layer.zip` → Runtime: Python 3.12
 
 ### 2.2 Lambda #1: Idézetek API
 
 1. Lambda → **Create function**
    - Name: `cloud-quotes-api`
    - Runtime: **Python 3.12**
-2. Kód: másold be a `02-Lambda/quotes/lambda_handler.py` tartalmát
-3. Layers → **Add a layer** → Custom layers → `pymysql`
-4. Configuration → **Environment variables**:
+2. Create function
+3. Kód: másold be a `02-Lambda/quotes/lambda_handler.py` tartalmát
+4. Deploy
+5. Layers → **Add a layer** → Custom layers → `pymysql`
+6. Configuration → **Environment variables**:
 
 | Kulcs | Érték |
 |-------|-------|
@@ -168,19 +170,20 @@ Lambda → **Layers** → Create layer → Name: `pymysql` → Upload zip → Ru
 | `DB_PASSWORD` | ⏳ *A 4. lépésben adjuk meg* |
 | `DB_NAME` | `cloudquotes` |
 
-5. Configuration → General → **Timeout**: 30 sec
-6. Configuration → **VPC**: ⏳ *A 4. lépésben állítjuk be*
+7. Configuration → General → **Timeout**: 30 sec
+8. Configuration → **VPC**: ⏳ *A 4. lépésben állítjuk be*
 
 ### 2.3 Lambda #2: AI Chatbot
 
 1. Lambda → **Create function**
    - Name: `cloud-chat-api`
    - Runtime: **Python 3.12**
-2. Kód: másold be a `02-Lambda/chat/lambda_handler.py` tartalmát
-3. **NEM kell Layer** – a boto3 alapból elérhető
-4. **NEM kell VPC** – a Bedrock publikus endpoint
-5. **Timeout**: 30 sec
-6. IAM: ⏳ *Az 5. lépésben adjuk hozzá*
+2. Create function 
+3. Kód: másold be a `02-Lambda/chat/lambda_handler.py` tartalmát
+4. **NEM kell Layer** – a boto3 alapból elérhető
+5. **NEM kell VPC** – a Bedrock publikus endpoint
+6. **Timeout**: 30 sec
+7. IAM: ⏳ *Az 5. lépésben adjuk hozzá*
 
 ---
 
@@ -201,9 +204,9 @@ API Gateway → Create API → **REST API** → Name: `cloud-quotes`
 | `/chat` | POST | `cloud-chat-api` | ✅ |
 
 Lépések:
-1. Resources → Create resource → `quotes` → Create method → GET → Lambda Proxy → `cloud-quotes-api`
-2. `/quotes` → Create resource → `random` → Create method → GET → Lambda Proxy → `cloud-quotes-api`
-3. Root `/` → Create resource → `chat` → Create method → POST → Lambda Proxy → `cloud-chat-api`
+1. Resources → Create resource → `quotes` → Create method → GET → Lambda function → `cloud-quotes-api`
+2. `/quotes` → Create resource → `random` → Create method → GET → Lambda function → `cloud-quotes-api`
+3. Root `/` → Create resource → `chat` → Create method → POST → Lambda function → `cloud-chat-api`
 
 ### 3.3 CORS engedélyezése
 
