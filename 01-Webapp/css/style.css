@@ -29,7 +29,7 @@ body {
 .header-icon { font-size: 56px; margin-bottom: 12px; display: inline-block; animation: pulse 3s ease-in-out infinite; }
 @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 .header h1 {
-    font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 900;
+    font-size: 2.8rem; font-weight: 900;
     background: linear-gradient(135deg, #38bdf8, #a78bfa, #f093fb);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     margin-bottom: 8px;
@@ -55,13 +55,13 @@ body {
 }
 @keyframes shimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
 .quote-mark {
-    font-family: 'Playfair Display', serif; font-size: 5rem; line-height: 1;
+    font-size: 5rem; line-height: 1;
     background: linear-gradient(135deg, #38bdf8, #a78bfa);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     margin-bottom: -10px; opacity: 0.6;
 }
 .quote-text {
-    font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700;
+    font-size: 1.6rem; font-weight: 700;
     line-height: 1.5; margin-bottom: 20px; transition: opacity 0.4s;
 }
 .quote-author { color: var(--accent); font-size: 1rem; font-weight: 500; }
@@ -89,7 +89,7 @@ body {
 }
 .btn-secondary:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
 .btn-secondary.active { background: rgba(56, 189, 248, 0.15); border-color: var(--accent); color: var(--accent); }
-.section-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 20px; text-align: center; }
+.section-title { font-size: 1.5rem; margin-bottom: 20px; text-align: center; }
 .quotes-grid { display: grid; gap: 16px; margin-bottom: 40px; }
 .mini-card {
     background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06);
@@ -101,7 +101,7 @@ body {
     background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08);
     border-radius: 24px; padding: 40px; text-align: center;
 }
-.arch-section h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 30px; }
+.arch-section h2 { font-size: 1.5rem; margin-bottom: 30px; }
 .arch-flow { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
 .arch-box {
     background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
