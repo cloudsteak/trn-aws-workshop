@@ -127,7 +127,7 @@ Teszt: `http://EC2_PUBLIC_IP` → Apache tesztoldal jelenik meg.
 A fájlokat közvetlenül a GitHub repóból töltjük le – így nincs kódolási probléma:
 
 ```bash
-REPO="https://raw.githubusercontent.com/cloudsteak/trn-aws-workshop/CMP-5-Init/01-Webapp"
+REPO="https://raw.githubusercontent.com/cloudsteak/trn-aws-workshop/Cmain/01-Webapp"
 
 
 
@@ -140,6 +140,7 @@ sudo curl -o /var/www/html/js/app.js        "$REPO/js/app.js"
 ```
 
 > ⚠️ Cseréld ki a `GITHUB_USER/REPO_NAME`-et a saját repódra!
+> Ellenőrizd a létrejött fájlstruktúrát: `tree /var/www/html`
 
 Teszt: `http://EC2_PUBLIC_IP` → Az oldal megjelenik. A health dashboard piros – ez normális, nincs backend még.
 
@@ -206,6 +207,8 @@ Lambda → **Layers** → Create layer → Name: `pymysql` → Upload: `pymysql-
 API Gateway → Create API → **REST API** → Name: `cloud-quotes`
 
 ### 3.2 Végpontok
+
+Azoknál a methodoknál, ahol a Lambda függvényt hozzárendeljük, ott kapcsold be a **Lambda Proxy integration**-t – így a Lambda teljes request/response objektumot kap, és mi döntjük el mit csinálunk vele.
 
 | Resource | Method | Lambda function | Proxy |
 |----------|--------|----------------|-------|
