@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☁️ Cloud Idézetek</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">☁️</div>
+            <h1>Cloud Idézetek</h1>
+            <p>Inspiráló tech idézetek – AWS-sel megvalósítva</p>
+            <div class="tech-badges">
+                <span class="badge">🖥️ EC2 + Apache</span>
+                <span class="badge">⚡ Lambda</span>
+                <span class="badge">🗄️ RDS MySQL</span>
+                <span class="badge">🌐 API Gateway</span>
+                <span class="badge">🤖 Bedrock AI</span>
+            </div>
+        </div>
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <div class="quote-card" id="quoteCard">
+            <div class="quote-mark">"</div>
+            <div class="quote-text" id="quoteText">Betöltés...</div>
+            <div class="quote-author" id="quoteAuthor"></div>
+            <div class="quote-category" id="quoteCategory" style="display:none;"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="loadRandomQuote()">🎲 Új idézet</button>
+            <button class="btn btn-secondary" data-cat="tech" onclick="filterCategory(this)">💻 Tech</button>
+            <button class="btn btn-secondary" data-cat="cloud" onclick="filterCategory(this)">☁️ Cloud</button>
+            <button class="btn btn-secondary" data-cat="motivation" onclick="filterCategory(this)">🚀 Motiváció</button>
+            <button class="btn btn-secondary" data-cat="" onclick="filterCategory(this)">📋 Összes</button>
+        </div>
+
+        <details class="quotes-collapsible" id="quotesCollapsible">
+            <summary class="section-title">📚 Összes idézet</summary>
+            <div class="quotes-grid" id="quotesGrid"></div>
+        </details>
+
+        <!-- Architecture -->
+        <div class="arch-section">
+            <h2>🏗️ Architektúra</h2>
+            <p class="arch-label">Idézetek:</p>
+            <div class="arch-flow">
+                <div class="arch-box"><div class="icon">👤</div><div class="label">Böngésző</div></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box"><div class="icon">🖥️</div><div class="label">EC2 Apache</div><div class="sub">Frontend</div></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box"><div class="icon">🌐</div><div class="label">API Gateway</div></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box"><div class="icon">⚡</div><div class="label">Lambda</div><div class="sub">quotes API</div></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box"><div class="icon">🗄️</div><div class="label">RDS MySQL</div></div>
+            </div>
+            <p class="arch-label" style="margin-top: 24px;">AI Chatbot:</p>
+            <div class="arch-flow">
+                <div class="arch-box"><div class="icon">💬</div><div class="label">Chat ablak</div></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box"><div class="icon">🌐</div><div class="label">API Gateway</div></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box"><div class="icon">⚡</div><div class="label">Lambda</div><div class="sub">chat API</div></div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-box"><div class="icon">🤖</div><div class="label">Bedrock</div><div class="sub">Claude</div></div>
+            </div>
+        </div>
+
+        <!-- Health Dashboard -->
+        <div class="health-section">
+            <h2>📡 Szolgáltatások állapota</h2>
+            <p class="health-subtitle">Minden komponens állapota valós időben</p>
+            <div class="health-grid">
+                <div class="health-card" id="health-ec2">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">🖥️ EC2 + Apache</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+                <div class="health-card" id="health-apigw">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">🌐 API Gateway</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+                <div class="health-card" id="health-lambda-q">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">⚡ Lambda (quotes)</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+                <div class="health-card" id="health-lambda-c">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">⚡ Lambda (chat)</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+                <div class="health-card" id="health-rds">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">🗄️ RDS MySQL</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+                <div class="health-card" id="health-bedrock">
+                    <div class="h-header"><span class="h-dot"></span><span class="h-name">🤖 Bedrock AI</span></div>
+                    <div class="h-detail">Ellenőrzés...</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="checkHealth()" style="margin-top:16px;">🔄 Újra ellenőrzés</button>
+        </div>
+    </div>
+
+    <!-- Floating chatbot -->
+    <button class="chat-fab" id="chatFab" onclick="toggleChat()">🤖</button>
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <div class="chat-header-icon">🤖</div>
+            <div class="chat-header-text">
+                <h3>Cloud Mentor AI</h3>
+                <p>Powered by Amazon Bedrock (Claude)</p>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg ai">
+                Szia! 👋 Cloud Mentor AI vagyok.<br><br>
+                Kérdezz bármit a felhő technológiákról, AWS szolgáltatásokról, vagy a szoftverfejlesztésről!
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput"
+                   placeholder="Kérdezz valamit..."
+                   onkeydown="if(event.key==='Enter') sendChat()">
+            <button class="chat-send" id="chatSend" onclick="sendChat()">➤</button>
+        </div>
+        <div class="powered-by">Amazon Bedrock + Claude | AWS Workshop</div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
