@@ -1,22 +1,21 @@
 # ☁️ AWS Workshop – Cloud Idézetek + AI Chatbot
 
-Egy napos, gyakorlati AWS képzés. A nap végére egy **működő webalkalmazást** hozunk létre,
-ami idézeteket jelenít meg adatbázisból és egy AI chatbotot is tartalmaz.
+Egy napos, gyakorlati AWS képzés. A nap végére egy **működő webalkalmazást** hozunk létre, ami idézeteket jelenít meg adatbázisból és egy AI chatbotot is tartalmaz.
 
 ---
 
-## 🏗️ Architektúra
+## Architektúra
 
 
 ```mermaid
 graph LR
     Browser["👤 Böngésző"]
-    EC2["🖥️ EC2Apache"]
+    EC2["🖥️ EC2 + Apache"]
     APIGW["🌐 API Gateway"]
-    LambdaQ["⚡ Lambdaquotes"]
-    LambdaC["⚡ Lambdachat"]
-    RDS["🗄️ RDSMySQL"]
-    Bedrock["🤖 BedrockClaude AI"]
+    LambdaQ["⚡ Lambda-quotes"]
+    LambdaC["⚡ Lambda-chat"]
+    RDS["🗄️ RDS MySQL"]
+    Bedrock["🤖 Bedrock Claude AI"]
 
     Browser --> EC2
     EC2 --> APIGW
@@ -44,7 +43,7 @@ graph LR
 
 ---
 
-## 📁 Projekt struktúra
+## Projekt struktúra
 
 ```
 .
@@ -68,7 +67,7 @@ graph LR
 
 ---
 
-## 🎯 Haladási terv
+## Haladási terv
 
 | # | Lépés | Működik utána? |
 |---|-------|----------------|
@@ -97,13 +96,14 @@ AWS Console → **EC2** → **Launch instance**
 
 | Beállítás | Érték |
 |-----------|-------|
-| Name | `workshop-frontend` |
+| Name | `webapp-frontend` |
 | AMI | **Amazon Linux 2023** (free tier) |
-| Instance type | **t2.micro** (free tier) |
-| Key pair | Create new → `workshop-key` → Download! |
+| Instance type | **t3.micro** (free tier) |
+| Key pair | Create new → `webapp-key` → Download! |
 | Security group | Create new |
-| → SSH (22) | My IP |
+| → SSH (22) | My IP (legbiztonságosabb) |
 | → HTTP (80) | **Anywhere** (0.0.0.0/0) |
+| Advanced details → User data | (lásd: 1.3 Apache telepítése) |
 
 ### 1.2 Csatlakozás
 
@@ -112,6 +112,7 @@ EC2 → Instances → válaszd ki → **Connect** → **EC2 Instance Connect** �
 ### 1.3 Apache telepítése
 
 ```bash
+#!/bin/bash
 sudo yum update -y
 sudo yum install -y httpd
 sudo systemctl start httpd
@@ -125,10 +126,10 @@ Teszt: `http://EC2_PUBLIC_IP` → Apache tesztoldal jelenik meg.
 ```bash
 sudo mkdir -p /var/www/html/css /var/www/html/js
 
-sudo nano /var/www/html/index.html        # ← 01-Webapp/index.html tartalma
-sudo nano /var/www/html/css/style.css      # ← 01-Webapp/css/style.css tartalma
-sudo nano /var/www/html/js/config.js       # ← 01-Webapp/js/config.js tartalma
-sudo nano /var/www/html/js/app.js          # ← 01-Webapp/js/app.js tartalma
+sudo nano /var/www/html/index.html        # 01-Webapp/index.html tartalma
+sudo nano /var/www/html/css/style.css      # 01-Webapp/css/style.css tartalma
+sudo nano /var/www/html/js/config.js       # 01-Webapp/js/config.js tartalma
+sudo nano /var/www/html/js/app.js          # 01-Webapp/js/app.js tartalma
 ```
 
 Teszt: `http://EC2_PUBLIC_IP` → Az oldal megjelenik, de hibát dob (nincs backend még).
@@ -137,7 +138,7 @@ Teszt: `http://EC2_PUBLIC_IP` → Az oldal megjelenik, de hibát dob (nincs back
 
 ## 2. lépés – Lambda function-ök
 
-> 📂 Fájlok: `02-Lambda/`
+> Fájlok: `02-Lambda/`
 
 ### 2.1 PyMySQL Layer készítése
 
@@ -212,7 +213,7 @@ Lépések:
 
 Deploy API → Create new stage → `prod` → Deploy
 
-📋 Jegyezd fel az **Invoke URL**-t!
+Jegyezd fel az **Invoke URL**-t!
 
 ### 3.5 ⚠️ Vissza az EC2-re: config.js frissítése
 
@@ -230,7 +231,7 @@ API_BASE_URL: 'https://abc123xyz.execute-api.eu-central-1.amazonaws.com/prod',
 
 ## 4. lépés – RDS MySQL adatbázis
 
-> 📂 Fájlok: `03-Database/`
+> Fájlok: `03-Database/`
 
 ### 4.1 RDS instance létrehozása
 
@@ -258,7 +259,7 @@ EC2 → Security Groups → `workshop-db-sg` → Inbound → Edit:
 
 ### 4.3 SQL futtatás
 
-📋 Jegyezd fel az RDS **Endpoint**-ot (RDS → Databases → workshop-db → Connectivity).
+Jegyezd fel az RDS **Endpoint**-ot (RDS → Databases → workshop-db → Connectivity).
 
 MySQL Workbench-ben vagy parancssorból:
 
@@ -336,7 +337,7 @@ Webapp: `http://EC2_PUBLIC_IP` → jobb alsó sarok 🤖 → 🎉 **Az AI válas
 
 ---
 
-## 🎉 Kész!
+## Kész!
 
 A teljes alkalmazás működik:
 
@@ -347,7 +348,7 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 
 ---
 
-## 🧹 Takarítás (a workshop után!)
+## Takarítás (Erőforrások eltávolítása és törlése a workshop után!)
 
 1. **EC2**: Terminate instance
 2. **RDS**: Delete database (skip final snapshot)
@@ -370,7 +371,7 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 
 ---
 
-## 💰 Költségek
+## Költségek
 
 | Szolgáltatás | Free tier | Becsült költség |
 |-------------|-----------|----------------|
@@ -380,6 +381,3 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 | API Gateway | ✅ 1M kérés/hó | $0 |
 | Bedrock Haiku | ❌ Pay-per-use | ~$0.01–0.05 |
 
----
-
-*Készítette: Cloud Mentor – AWS Workshop*
