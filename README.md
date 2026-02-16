@@ -1,4 +1,4 @@
-# ☁️ AWS Workshop – Cloud Idézetek + AI Chatbot
+# ☁️ AWS Képzés – Cloud Idézetek + AI Chatbot
 
 Egy napos, gyakorlati AWS képzés. A nap végére egy **működő webalkalmazást** hozunk létre,
 ami idézeteket jelenít meg adatbázisból és egy AI chatbotot is tartalmaz.
@@ -254,30 +254,30 @@ AWS Console → **RDS** → Create database
 |-----------|-------|
 | Engine | **MySQL** 8.0 |
 | Template | **Free tier** ✅ |
-| DB instance identifier | `workshop-db` |
+| DB instance identifier | `quotes-db` |
 | Master username | `admin` |
 | Master password | Válassz egyet és **jegyezd meg!** |
 | DB instance class | `db.t3.micro` |
 | Storage | 20 GB |
-| Public access | **Yes** ⚠️ (csak workshophoz!) |
-| Security group | Create new → `workshop-db-sg` |
+| Public access | **Yes** ⚠️ (csak képzéshez!) |
+| Security group | Create new → `quotes-db-sg` |
 | Initial database name | `cloudquotes` |
 
 Create database → Várj 5-10 percet.
 
 ### 4.2 Security Group
 
-EC2 → Security Groups → `workshop-db-sg` → Inbound → Edit:
+EC2 → Security Groups → `quotes-db-sg` → Inbound → Edit:
 - Type: **MySQL/Aurora** (3306) → Source: **Anywhere** ⚠️
 
 ### 4.3 SQL futtatás
 
-📋 Jegyezd fel az RDS **Endpoint**-ot (RDS → Databases → workshop-db → Connectivity).
+📋 Jegyezd fel az RDS **Endpoint**-ot (RDS → Databases → quotes-db → Connectivity).
 
 MySQL Workbench-ben vagy parancssorból:
 
 ```bash
-mysql -h workshop-db.xxxxx.rds.amazonaws.com -u admin -p < 03-Database/init.sql
+mysql -h quotes-db.xxxxx.rds.amazonaws.com -u admin -p < 03-Database/init.sql
 ```
 
 ### 4.4 ⚠️ Vissza a Lambda-hoz: environment variables
@@ -286,7 +286,7 @@ Lambda → `cloud-quotes-api` → Configuration → Environment variables:
 
 | Kulcs | Érték |
 |-------|-------|
-| `DB_HOST` | `workshop-db.xxxxx.rds.amazonaws.com` |
+| `DB_HOST` | `quotes-db.xxxxx.rds.amazonaws.com` |
 | `DB_USER` | `admin` |
 | `DB_PASSWORD` | a te jelszavad |
 | `DB_NAME` | `cloudquotes` |
@@ -361,7 +361,7 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 
 ---
 
-## Takarítás (Erőforrások eltávolítása és törlése a workshop után!)
+## Takarítás (Erőforrások eltávolítása és törlése a képzés után!)
 
 1. **EC2**: Terminate instance
 2. **RDS**: Delete database (skip final snapshot)
