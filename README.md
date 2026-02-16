@@ -10,12 +10,12 @@ ami idézeteket jelenít meg adatbázisból és egy AI chatbotot is tartalmaz.
 ```mermaid
 graph TD
     Browser["Böngésző"]
-    EC2["Frontend<br/>EC2 + Apache"]
+    EC2["Frontend:<br/>EC2 + Apache"]
     APIGW["API Gateway"]
-    LambdaQ["Backend<br/>Lambda quotes"]
-    LambdaC["Backend<br/>Lambda chat"]
-    RDS["Database<br/>RDS MySQL"]
-    Bedrock["AI<br/>Bedrock Claude AI"]
+    LambdaQ["Backend:<br/>Lambda quotes"]
+    LambdaC["Backend:<br/>Lambda chat"]
+    RDS["Database:<br/>RDS MySQL"]
+    Bedrock["AI:<br/>Bedrock Claude AI"]
 
     Browser --> EC2
     EC2 --> APIGW
@@ -60,7 +60,7 @@ graph TD
 │   └── chat/
 │       └── lambda_handler.py  ← AI Chatbot
 ├── 03-Database/
-│   └── init.sql               ← Tábla + 15 idézet
+│   └── init.sql               ← Tábla + idézetek
 ├── LICENSE
 └── README.md                  ← Ez a fájl
 ```
@@ -127,7 +127,7 @@ Teszt: `http://EC2_PUBLIC_IP` → Apache tesztoldal jelenik meg.
 A fájlokat közvetlenül a GitHub repóból töltjük le – így nincs kódolási probléma:
 
 ```bash
-REPO="https://raw.githubusercontent.com/cloudsteak/trn-aws-workshop/Cmain/01-Webapp"
+REPO="https://raw.githubusercontent.com/cloudsteak/trn-aws-workshop/main/01-Webapp"
 
 sudo mkdir -p /var/www/html/css /var/www/html/js
 
@@ -137,7 +137,8 @@ sudo curl -o /var/www/html/js/config.js     "$REPO/js/config.js"
 sudo curl -o /var/www/html/js/app.js        "$REPO/js/app.js"
 ```
 
-> ⚠️ Cseréld ki a `GITHUB_USER/REPO_NAME`-et a saját repódra!
+> ⚠️ Cseréld ki a `cloudsteak/trn-aws-workshop`-et a saját repódra!
+
 > Ellenőrizd a létrejött fájlstruktúrát: `tree /var/www/html`
 
 Teszt: `http://EC2_PUBLIC_IP` → Az oldal megjelenik. A health dashboard piros – ez normális, nincs backend még.
@@ -151,7 +152,7 @@ Teszt: `http://EC2_PUBLIC_IP` → Az oldal megjelenik. A health dashboard piros 
 ### 2.1 PyMySQL Layer készítése
 
 A quotes Lambda-nak kell a `pymysql` csomag. Futtasd a repóban található scriptet
-(Windows, Mac, Linux – mindenhol működik, csak Python kell):
+(Windows, Mac, Linux – mindenhol működik, csak Python 3.12 kell):
 
 ```bash
 python 02-Lambda/build_layer.py
@@ -253,20 +254,21 @@ API_BASE_URL: 'https://abc123xyz.execute-api.eu-central-1.amazonaws.com/prod',
 
 ### 4.1 RDS instance létrehozása
 
-AWS Console → **RDS** → Create database
+AWS Console → **RDS** → Create database (nem Easy mode)
 
-| Beállítás              | Érték                             |
-| ---------------------- | --------------------------------- |
-| Engine                 | **MySQL** 8.0                     |
-| Template               | **Free tier** ✅                  |
-| DB instance identifier | `quotes-db`                       |
-| Master username        | `admin`                           |
-| Master password        | Válassz egyet és **jegyezd meg!** |
-| DB instance class      | `db.t4g.micro`                    |
-| Storage                | 20 GB                             |
-| Public access          | **Yes** ⚠️ (csak képzéshez!)      |
-| Security group         | Create new → `quotes-db-sg`       |
-| Initial database name  | `cloudquotes`                     |
+| Beállítás              | Érték                                                                        |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| Engine                 | **MySQL** 8.0                                                                |
+| Template               | **Free tier** ✅                                                             |
+| DB instance identifier | `quotes-db`                                                                  |
+| Master username        | `admin`                                                                      |
+| Master password        | Válassz egyet és **jegyezd meg!**                                            |
+| DB instance class      | `db.t4g.micro`                                                               |
+| Storage                | 20 GB                                                                        |
+| Public access          | **Yes** ⚠️ (csak képzéshez!)                                                 |
+| Security group         | Create new → `quotes-db-sg`                                                  |
+| Initial database name  | `cloudquotes`                                                                |
+| Initial backup         | Disabled. A bemutató során ne készüljön mentés, hogy ezzel is időt nyerjünk. |
 
 Create database → Várj 5-10 percet.
 
