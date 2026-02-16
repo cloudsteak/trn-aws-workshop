@@ -9,13 +9,13 @@ Egy napos, gyakorlati AWS képzés. A nap végére egy **működő webalkalmazá
 
 ```mermaid
 graph TD
-    Browser["👤 Böngésző"]
-    EC2["🖥️ EC2 + Apache"]
-    APIGW["🌐 API Gateway"]
-    LambdaQ["⚡ Lambda-quotes"]
-    LambdaC["⚡ Lambda-chat"]
-    RDS["🗄️ RDS MySQL"]
-    Bedrock["🤖 Bedrock Claude AI"]
+    Browser["Böngésző"]
+    EC2["EC2 + Apache"]
+    APIGW["API Gateway"]
+    LambdaQ["Lambda-quotes"]
+    LambdaC["Lambda-chat"]
+    RDS["RDS MySQL"]
+    Bedrock["Bedrock Claude AI"]
 
     Browser --> EC2
     EC2 --> APIGW
