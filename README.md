@@ -8,14 +8,14 @@ ami idézeteket jelenít meg adatbázisból és egy AI chatbotot is tartalmaz.
 ## 🏗️ Architektúra
 
 ```mermaid
-graph LR
-    Browser["👤 Böngésző"]
-    EC2["🖥️ EC2<br/>Apache"]
-    APIGW["🌐 API Gateway"]
-    LambdaQ["⚡ Lambda<br/>quotes"]
-    LambdaC["⚡ Lambda<br/>chat"]
-    RDS["🗄️ RDS<br/>MySQL"]
-    Bedrock["🤖 Bedrock<br/>Claude AI"]
+graph TD
+    Browser["Böngésző"]
+    EC2["Frontend<br/>EC2 + Apache"]
+    APIGW["API Gateway"]
+    LambdaQ["Backend<br/>Lambda quotes"]
+    LambdaC["Backend<br/>Lambda chat"]
+    RDS["Database<br/>RDS MySQL"]
+    Bedrock["AI<br/>Bedrock Claude AI"]
 
     Browser --> EC2
     EC2 --> APIGW
