@@ -1,21 +1,21 @@
 # ☁️ AWS Workshop – Cloud Idézetek + AI Chatbot
 
-Egy napos, gyakorlati AWS képzés. A nap végére egy **működő webalkalmazást** hozunk létre, ami idézeteket jelenít meg adatbázisból és egy AI chatbotot is tartalmaz.
+Egy napos, gyakorlati AWS képzés. A nap végére egy **működő webalkalmazást** hozunk létre,
+ami idézeteket jelenít meg adatbázisból és egy AI chatbotot is tartalmaz.
 
 ---
 
-## Architektúra
-
+## 🏗️ Architektúra
 
 ```mermaid
-graph TD
-    Browser["Böngésző"]
-    EC2["EC2 + Apache"]
-    APIGW["API Gateway"]
-    LambdaQ["Lambda-quotes"]
-    LambdaC["Lambda-chat"]
-    RDS["RDS MySQL"]
-    Bedrock["Bedrock Claude AI"]
+graph LR
+    Browser["👤 Böngésző"]
+    EC2["🖥️ EC2<br/>Apache"]
+    APIGW["🌐 API Gateway"]
+    LambdaQ["⚡ Lambda<br/>quotes"]
+    LambdaC["⚡ Lambda<br/>chat"]
+    RDS["🗄️ RDS<br/>MySQL"]
+    Bedrock["🤖 Bedrock<br/>Claude AI"]
 
     Browser --> EC2
     EC2 --> APIGW
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## Projekt struktúra
+## 📁 Projekt struktúra
 
 ```
 .
@@ -67,7 +67,7 @@ graph TD
 
 ---
 
-## Haladási terv
+## 🎯 Haladási terv
 
 | # | Lépés | Működik utána? |
 |---|-------|----------------|
@@ -123,22 +123,28 @@ Teszt: `http://EC2_PUBLIC_IP` → Apache tesztoldal jelenik meg.
 
 ### 1.4 Frontend feltöltése
 
+A fájlokat közvetlenül a GitHub repóból töltjük le – így nincs kódolási probléma:
+
 ```bash
+REPO="https://raw.githubusercontent.com/GITHUB_USER/REPO_NAME/main/01-Webapp"
+
 sudo mkdir -p /var/www/html/css /var/www/html/js
 
-sudo nano /var/www/html/index.html        # 01-Webapp/index.html tartalma
-sudo nano /var/www/html/css/style.css      # 01-Webapp/css/style.css tartalma
-sudo nano /var/www/html/js/config.js       # 01-Webapp/js/config.js tartalma
-sudo nano /var/www/html/js/app.js          # 01-Webapp/js/app.js tartalma
+sudo curl -o /var/www/html/index.html      "$REPO/index.html"
+sudo curl -o /var/www/html/css/style.css    "$REPO/css/style.css"
+sudo curl -o /var/www/html/js/config.js     "$REPO/js/config.js"
+sudo curl -o /var/www/html/js/app.js        "$REPO/js/app.js"
 ```
 
-Teszt: `http://EC2_PUBLIC_IP` → Az oldal megjelenik, de hibát dob (nincs backend még).
+> ⚠️ Cseréld ki a `GITHUB_USER/REPO_NAME`-et a saját repódra!
+
+Teszt: `http://EC2_PUBLIC_IP` → Az oldal megjelenik. A health dashboard piros – ez normális, nincs backend még.
 
 ---
 
 ## 2. lépés – Lambda function-ök
 
-> Fájlok: `02-Lambda/`
+> 📂 Fájlok: `02-Lambda/`
 
 ### 2.1 PyMySQL Layer készítése
 
@@ -201,12 +207,16 @@ API Gateway → Create API → **REST API** → Name: `cloud-quotes`
 |----------|--------|----------------|-------|
 | `/quotes` | GET | `cloud-quotes-api` | ✅ |
 | `/quotes/random` | GET | `cloud-quotes-api` | ✅ |
+| `/quotes/health` | GET | `cloud-quotes-api` | ✅ |
 | `/chat` | POST | `cloud-chat-api` | ✅ |
+| `/chat/health` | GET | `cloud-chat-api` | ✅ |
 
 Lépések:
-1. Resources → Create resource → `quotes` → Create method → GET → Lambda function → `cloud-quotes-api`
-2. `/quotes` → Create resource → `random` → Create method → GET → Lambda function → `cloud-quotes-api`
-3. Root `/` → Create resource → `chat` → Create method → POST → Lambda function → `cloud-chat-api`
+1. Resources → Create resource → `quotes` → Create method → GET → Lambda Proxy → `cloud-quotes-api`
+2. `/quotes` → Create resource → `random` → Create method → GET → Lambda Proxy → `cloud-quotes-api`
+3. `/quotes` → Create resource → `health` → Create method → GET → Lambda Proxy → `cloud-quotes-api`
+4. Root `/` → Create resource → `chat` → Create method → POST → Lambda Proxy → `cloud-chat-api`
+5. `/chat` → Create resource → `health` → Create method → GET → Lambda Proxy → `cloud-chat-api`
 
 ### 3.3 CORS engedélyezése
 
@@ -216,9 +226,9 @@ Lépések:
 
 Deploy API → Create new stage → `prod` → Deploy
 
-Jegyezd fel az **Invoke URL**-t!
+📋 Jegyezd fel az **Invoke URL**-t!
 
-### 3.5 ⚠️ Vissza az EC2-re: config.js frissítése
+### 3.6 ⚠️ Vissza az EC2-re: config.js frissítése
 
 ```bash
 sudo nano /var/www/html/js/config.js
@@ -234,7 +244,7 @@ API_BASE_URL: 'https://abc123xyz.execute-api.eu-central-1.amazonaws.com/prod',
 
 ## 4. lépés – RDS MySQL adatbázis
 
-> Fájlok: `03-Database/`
+> 📂 Fájlok: `03-Database/`
 
 ### 4.1 RDS instance létrehozása
 
@@ -262,7 +272,7 @@ EC2 → Security Groups → `workshop-db-sg` → Inbound → Edit:
 
 ### 4.3 SQL futtatás
 
-Jegyezd fel az RDS **Endpoint**-ot (RDS → Databases → workshop-db → Connectivity).
+📋 Jegyezd fel az RDS **Endpoint**-ot (RDS → Databases → workshop-db → Connectivity).
 
 MySQL Workbench-ben vagy parancssorból:
 
@@ -340,7 +350,7 @@ Webapp: `http://EC2_PUBLIC_IP` → jobb alsó sarok 🤖 → 🎉 **Az AI válas
 
 ---
 
-## Kész!
+## 🎉 Kész!
 
 A teljes alkalmazás működik:
 
@@ -374,7 +384,7 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 
 ---
 
-## Költségek
+## 💰 Költségek
 
 | Szolgáltatás | Free tier | Becsült költség |
 |-------------|-----------|----------------|
