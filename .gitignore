@@ -207,3 +207,8 @@ marimo/_lsp/
 __marimo__/
 .DS_Store
 .vscode/settings.json
+
+# Helyi Python mappa és fájlok
+python/**
+pymysql-layer.zip
+.python-version
