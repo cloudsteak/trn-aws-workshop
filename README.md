@@ -33,13 +33,13 @@ graph LR
     style Bedrock fill:#3b1f3b,stroke:#f093fb,color:#f1f5f9
 ```
 
-| Réteg | AWS szolgáltatás | Mappa |
-|-------|-----------------|-------|
-| Frontend | EC2 + Apache | `01-Webapp/` |
-| Backend | Lambda (Python) × 2 | `02-Lambda/` |
-| Adatbázis | RDS MySQL | `03-Database/` |
-| API | API Gateway | *(konzolban konfiguráljuk)* |
-| AI | Amazon Bedrock | *(konzolban konfiguráljuk)* |
+| Réteg     | AWS szolgáltatás    | Mappa                       |
+| --------- | ------------------- | --------------------------- |
+| Frontend  | EC2 + Apache        | `01-Webapp/`                |
+| Backend   | Lambda (Python) × 2 | `02-Lambda/`                |
+| Adatbázis | RDS MySQL           | `03-Database/`              |
+| API       | API Gateway         | _(konzolban konfiguráljuk)_ |
+| AI        | Amazon Bedrock      | _(konzolban konfiguráljuk)_ |
 
 ---
 
@@ -69,13 +69,13 @@ graph LR
 
 ## 🎯 Haladási terv
 
-| # | Lépés | Működik utána? |
-|---|-------|----------------|
-| 1 | EC2 + Apache + frontend feltöltés | ❌ (nincs backend) |
-| 2 | Lambda function-ök létrehozása | ❌ (nincs API GW, nincs DB) |
-| 3 | API Gateway + config.js frissítés | ❌ (nincs DB) |
-| 4 | RDS MySQL + Lambda env vars | ✅ Idézetek működnek! |
-| 5 | Bedrock model access + IAM | ✅ AI chatbot is működik! |
+| #   | Lépés                             | Működik utána?              |
+| --- | --------------------------------- | --------------------------- |
+| 1   | EC2 + Apache + frontend feltöltés | ❌ (nincs backend)          |
+| 2   | Lambda function-ök létrehozása    | ❌ (nincs API GW, nincs DB) |
+| 3   | API Gateway + config.js frissítés | ❌ (nincs DB)               |
+| 4   | RDS MySQL + Lambda env vars       | ✅ Idézetek működnek!       |
+| 5   | Bedrock model access + IAM        | ✅ AI chatbot is működik!   |
 
 ---
 
@@ -95,16 +95,16 @@ graph LR
 
 AWS Console → **EC2** → **Launch instance**
 
-| Beállítás | Érték |
-|-----------|-------|
-| Name | `webapp-frontend` |
-| AMI | **Amazon Linux 2023** (free tier) |
-| Instance type | **t3.micro** (free tier) |
-| Key pair | Create new → `webapp-key` → Download! |
-| Security group | Create new |
-| → SSH (22) | My IP (legbiztonságosabb) |
-| → HTTP (80) | **Anywhere** (0.0.0.0/0) |
-| Advanced details → User data | (lásd: 1.3 Apache telepítése) |
+| Beállítás                    | Érték                                 |
+| ---------------------------- | ------------------------------------- |
+| Name                         | `webapp-frontend`                     |
+| AMI                          | **Amazon Linux 2023** (free tier)     |
+| Instance type                | **t3.micro** (free tier)              |
+| Key pair                     | Create new → `webapp-key` → Download! |
+| Security group               | Create new                            |
+| → SSH (22)                   | My IP (legbiztonságosabb)             |
+| → HTTP (80)                  | **Anywhere** (0.0.0.0/0)              |
+| Advanced details → User data | (lásd: 1.3 Apache telepítése)         |
 
 ### 1.2 Csatlakozás
 
@@ -128,8 +128,6 @@ A fájlokat közvetlenül a GitHub repóból töltjük le – így nincs kódol�
 
 ```bash
 REPO="https://raw.githubusercontent.com/cloudsteak/trn-aws-workshop/Cmain/01-Webapp"
-
-
 
 sudo mkdir -p /var/www/html/css /var/www/html/js
 
@@ -174,15 +172,14 @@ Lambda → **Layers** → Create layer → Name: `pymysql` → Upload: `pymysql-
 5. Layers → **Add a layer** → Custom layers → `pymysql`
 6. Configuration → **Environment variables**:
 
-| Kulcs | Érték |
-|-------|-------|
-| `DB_HOST` | ⏳ *A 4. lépésben kapjuk meg* |
-| `DB_USER` | `admin` |
-| `DB_PASSWORD` | ⏳ *A 4. lépésben adjuk meg* |
-| `DB_NAME` | `cloudquotes` |
+| Kulcs         | Érték                         |
+| ------------- | ----------------------------- |
+| `DB_HOST`     | ⏳ _A 4. lépésben kapjuk meg_ |
+| `DB_USER`     | `admin`                       |
+| `DB_PASSWORD` | ⏳ _A 4. lépésben adjuk meg_  |
+| `DB_NAME`     | `cloudquotes`                 |
 
 7. Configuration → General → **Timeout**: 30 sec
-8. Configuration → **VPC**: ⏳ *A 4. lépésben állítjuk be*
 
 ### 2.3 Lambda #2: AI Chatbot
 
@@ -194,13 +191,13 @@ Lambda → **Layers** → Create layer → Name: `pymysql` → Upload: `pymysql-
 4. **NEM kell Layer** – a boto3 alapból elérhető
 5. **NEM kell VPC** – a Bedrock publikus endpoint
 6. **Timeout**: 30 sec
-7. IAM: ⏳ *Az 5. lépésben adjuk hozzá*
+7. IAM: ⏳ _Az 5. lépésben adjuk hozzá_
 
 ---
 
 ## 3. lépés – API Gateway
 
-> *(Nincs kódfájl – a konzolban konfiguráljuk)*
+> _(Nincs kódfájl – a konzolban konfiguráljuk)_
 
 ### 3.1 API létrehozása
 
@@ -210,15 +207,16 @@ API Gateway → Create API → **REST API** → Name: `cloud-quotes`
 
 Azoknál a methodoknál, ahol a Lambda függvényt hozzárendeljük, ott kapcsold be a **Lambda Proxy integration**-t – így a Lambda teljes request/response objektumot kap, és mi döntjük el mit csinálunk vele.
 
-| Resource | Method | Lambda function | Proxy |
-|----------|--------|----------------|-------|
-| `/quotes` | GET | `cloud-quotes-api` | ✅ |
-| `/quotes/random` | GET | `cloud-quotes-api` | ✅ |
-| `/quotes/health` | GET | `cloud-quotes-api` | ✅ |
-| `/chat` | POST | `cloud-chat-api` | ✅ |
-| `/chat/health` | GET | `cloud-chat-api` | ✅ |
+| Resource         | Method | Lambda function    | Proxy |
+| ---------------- | ------ | ------------------ | ----- |
+| `/quotes`        | GET    | `cloud-quotes-api` | ✅    |
+| `/quotes/random` | GET    | `cloud-quotes-api` | ✅    |
+| `/quotes/health` | GET    | `cloud-quotes-api` | ✅    |
+| `/chat`          | POST   | `cloud-chat-api`   | ✅    |
+| `/chat/health`   | GET    | `cloud-chat-api`   | ✅    |
 
 Lépések:
+
 1. Resources → Create resource → `quotes` → Create method → GET → Lambda Proxy → `cloud-quotes-api`
 2. `/quotes` → Create resource → `random` → Create method → GET → Lambda Proxy → `cloud-quotes-api`
 3. `/quotes` → Create resource → `health` → Create method → GET → Lambda Proxy → `cloud-quotes-api`
@@ -257,24 +255,25 @@ API_BASE_URL: 'https://abc123xyz.execute-api.eu-central-1.amazonaws.com/prod',
 
 AWS Console → **RDS** → Create database
 
-| Beállítás | Érték |
-|-----------|-------|
-| Engine | **MySQL** 8.0 |
-| Template | **Free tier** ✅ |
-| DB instance identifier | `quotes-db` |
-| Master username | `admin` |
-| Master password | Válassz egyet és **jegyezd meg!** |
-| DB instance class | `db.t4g.micro` |
-| Storage | 20 GB |
-| Public access | **Yes** ⚠️ (csak képzéshez!) |
-| Security group | Create new → `quotes-db-sg` |
-| Initial database name | `cloudquotes` |
+| Beállítás              | Érték                             |
+| ---------------------- | --------------------------------- |
+| Engine                 | **MySQL** 8.0                     |
+| Template               | **Free tier** ✅                  |
+| DB instance identifier | `quotes-db`                       |
+| Master username        | `admin`                           |
+| Master password        | Válassz egyet és **jegyezd meg!** |
+| DB instance class      | `db.t4g.micro`                    |
+| Storage                | 20 GB                             |
+| Public access          | **Yes** ⚠️ (csak képzéshez!)      |
+| Security group         | Create new → `quotes-db-sg`       |
+| Initial database name  | `cloudquotes`                     |
 
 Create database → Várj 5-10 percet.
 
 ### 4.2 Security Group
 
 EC2 → Security Groups → `quotes-db-sg` → Inbound → Edit:
+
 - Type: **MySQL/Aurora** (3306) → Source: **Anywhere** ⚠️
 
 ### 4.3 Csatlakozás DBeaver-rel
@@ -286,24 +285,25 @@ EC2 → Security Groups → `quotes-db-sg` → Inbound → Edit:
 1. DBeaver → **New Database Connection** → MySQL
 2. **Main tab**:
 
-| Mező | Érték |
-|------|-------|
+| Mező        | Érték                                            |
+| ----------- | ------------------------------------------------ |
 | Server Host | `quotes-db.xxxxx.eu-central-1.rds.amazonaws.com` |
-| Port | `3306` |
-| Database | `cloudquotes` |
-| Username | `admin` |
-| Password | a te jelszavad |
+| Port        | `3306`                                           |
+| Database    | `cloudquotes`                                    |
+| Username    | `admin`                                          |
+| Password    | a te jelszavad                                   |
 
 3. **SSL tab** – kötelező az RDS-hez:
 
-| Beállítás | Érték |
-|-----------|-------|
-| Use SSL | ✅ |
-| Require SSL | ✅ |
-| Verify server certificate | ✅ |
-| CA Certificate | `global-bundle.pem` |
+| Beállítás                 | Érték               |
+| ------------------------- | ------------------- |
+| Use SSL                   | ✅                  |
+| Require SSL               | ✅                  |
+| Verify server certificate | ✅                  |
+| CA Certificate            | `global-bundle.pem` |
 
 A CA tanúsítványt töltsd le innen:
+
 ```
 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 ```
@@ -323,17 +323,12 @@ https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 
 Lambda → `cloud-quotes-api` → Configuration → Environment variables:
 
-| Kulcs | Érték |
-|-------|-------|
-| `DB_HOST` | `quotes-db.xxxxx.eu-central-1.rds.amazonaws.com` |
-| `DB_USER` | `admin` |
-| `DB_PASSWORD` | a te jelszavad |
-| `DB_NAME` | `cloudquotes` |
-
-Lambda → Configuration → **VPC** → Edit:
-- VPC: **Default VPC** (ugyanaz mint az RDS!)
-- Subnetek: válaszd ki az összeset
-- Security group: default
+| Kulcs         | Érték                                            |
+| ------------- | ------------------------------------------------ |
+| `DB_HOST`     | `quotes-db.xxxxx.eu-central-1.rds.amazonaws.com` |
+| `DB_USER`     | `admin`                                          |
+| `DB_PASSWORD` | a te jelszavad                                   |
+| `DB_NAME`     | `cloudquotes`                                    |
 
 ### 4.6 Tesztelés
 
@@ -345,7 +340,7 @@ Nyisd meg a webapp-ot a böngészőben: `http://EC2_PUBLIC_IP`
 
 ## 5. lépés – AI Chatbot (Amazon Bedrock)
 
-> *(Nincs kódfájl – a Lambda kód a 2. lépésben már felkerült)*
+> _(Nincs kódfájl – a Lambda kód a 2. lépésben már felkerült)_
 
 ### 5.1 Model access engedélyezése
 
@@ -354,8 +349,8 @@ Nyisd meg a webapp-ot a böngészőben: `http://EC2_PUBLIC_IP`
 3. **Request model access** → Enable
 
 > ⚠️ Az Anthropic első használatkor megköveteli a use case leírását:
-> *"Anthropic requires first-time customers to submit use case details before invoking a model,
-> once per account or once at the organization's management account."*
+> _"Anthropic requires first-time customers to submit use case details before invoking a model,
+> once per account or once at the organization's management account."_
 >
 > Kattints a **Submit use case details** gombra és töltsd ki a rövid kérdőívet.
 > Az információ az Anthropic-kal lesz megosztva. Ez egyszer kell, utána az összes Anthropic modell elérhető.
@@ -367,14 +362,17 @@ Nyisd meg a webapp-ot a böngészőben: `http://EC2_PUBLIC_IP`
 3. Keresés: `AmazonBedrockFullAccess` → Add
 
 Vagy minimális policy:
+
 ```json
 {
   "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Action": "bedrock:InvokeModel",
-    "Resource": "arn:aws:bedrock:eu-central-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
-  }]
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "bedrock:InvokeModel",
+      "Resource": "arn:aws:bedrock:eu-central-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+    }
+  ]
 }
 ```
 
@@ -413,24 +411,24 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 
 ## ❓ Gyakori problémák
 
-| Probléma | Megoldás |
-|----------|---------|
-| Lambda timeout (quotes) | Lambda ugyanabban a VPC-ben van mint az RDS? |
-| CORS hiba böngészőben | API GW → Enable CORS mindenhol → Deploy újra |
-| RDS connection refused | Security Group 3306 port nyitva? |
-| DBeaver SSL hiba | CA Certificate beállítva? `global-bundle.pem` letöltve? |
-| Bedrock access denied | Model access engedélyezve? IAM policy hozzáadva? Use case kitöltve? |
-| Webapp nem tölt be | Ellenőrizd a `js/config.js` API URL-t |
-| Apache nem indul | `sudo systemctl status httpd` |
+| Probléma                | Megoldás                                                            |
+| ----------------------- | ------------------------------------------------------------------- |
+| Lambda timeout (quotes) | RDS Public access bekapcsolva? Security Group 3306 nyitva?          |
+| CORS hiba böngészőben   | API GW → Enable CORS mindenhol → Deploy újra                        |
+| RDS connection refused  | Security Group 3306 port nyitva?                                    |
+| DBeaver SSL hiba        | CA Certificate beállítva? `global-bundle.pem` letöltve?             |
+| Bedrock access denied   | Model access engedélyezve? IAM policy hozzáadva? Use case kitöltve? |
+| Webapp nem tölt be      | Ellenőrizd a `js/config.js` API URL-t                               |
+| Apache nem indul        | `sudo systemctl status httpd`                                       |
 
 ---
 
 ## 💰 Költségek
 
-| Szolgáltatás | Free tier | Becsült költség |
-|-------------|-----------|----------------|
-| EC2 t3.micro | ✅ 12 hó | $0 |
-| RDS db.t4g.micro | ✅ 12 hó | $0 |
-| Lambda | ✅ 1M kérés/hó | $0 |
-| API Gateway | ✅ 1M kérés/hó | $0 |
-| Bedrock Haiku | ❌ Pay-per-use | ~$0.01–0.05 |
+| Szolgáltatás     | Free tier      | Becsült költség |
+| ---------------- | -------------- | --------------- |
+| EC2 t3.micro     | ✅ 12 hó       | $0              |
+| RDS db.t4g.micro | ✅ 12 hó       | $0              |
+| Lambda           | ✅ 1M kérés/hó | $0              |
+| API Gateway      | ✅ 1M kérés/hó | $0              |
+| Bedrock Haiku    | ❌ Pay-per-use | ~$0.01–0.05     |
