@@ -76,7 +76,7 @@ body {
 .btn {
     padding: 14px 28px; border-radius: 14px; border: none;
     font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600;
-    cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px;
+    cursor: pointer; transition: all 0.3s; align-items: center; gap: 8px;
 }
 .btn-primary {
     background: linear-gradient(135deg, #667eea, #764ba2); color: white;
