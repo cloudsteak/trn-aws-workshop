@@ -193,6 +193,8 @@ Lambda → **Layers** → Create layer → Name: `pymysql` → Upload: `pymysql-
 5. **NEM kell VPC** – a Bedrock publikus endpoint
 6. **Timeout**: 30 sec
 7. IAM: ⏳ _Az 5. lépésben adjuk hozzá_
+8. Opcionális env var (újabb Claude modellekhez):
+  - `BEDROCK_INFERENCE_PROFILE_ID` = inference profile ID vagy ARN
 
 ---
 
@@ -420,6 +422,7 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 | RDS connection refused  | Security Group 3306 port nyitva?                                    |
 | DBeaver SSL hiba        | CA Certificate beállítva? `global-bundle.pem` letöltve?             |
 | Bedrock access denied   | Model access engedélyezve? IAM policy hozzáadva? Use case kitöltve? |
+| Bedrock on-demand hiba  | Add meg a `BEDROCK_INFERENCE_PROFILE_ID` env var-t a chat Lambdán.  |
 | Webapp nem tölt be      | Ellenőrizd a `js/config.js` API URL-t                               |
 | Apache nem indul        | `sudo systemctl status httpd`                                       |
 
