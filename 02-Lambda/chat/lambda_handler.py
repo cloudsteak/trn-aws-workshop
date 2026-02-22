@@ -7,6 +7,7 @@ MODEL_ID = os.environ.get(
     'BEDROCK_MODEL_ID',
     'anthropic.claude-3-haiku-20240307-v1:0'
 )
+INFERENCE_PROFILE_ID = os.environ.get('BEDROCK_INFERENCE_PROFILE_ID', '').strip()
 
 try:
     bedrock = boto3.client('bedrock-runtime', region_name=REGION)
@@ -33,6 +34,19 @@ HEADERS = {
 }
 
 
+def _resolve_model_target():
+    return INFERENCE_PROFILE_ID or MODEL_ID
+
+
+def _invoke_bedrock(payload):
+    return bedrock.invoke_model(
+        modelId=_resolve_model_target(),
+        contentType='application/json',
+        accept='application/json',
+        body=json.dumps(payload)
+    )
+
+
 def lambda_handler(event, context):
     """
     POST /chat          → AI chat válasz
@@ -47,16 +61,11 @@ def lambda_handler(event, context):
     if '/chat/health' in path:
         health = {'lambda': True, 'bedrock': False, 'bedrock_error': None}
         try:
-            bedrock.invoke_model(
-                modelId=MODEL_ID,
-                contentType='application/json',
-                accept='application/json',
-                body=json.dumps({
-                    'anthropic_version': 'bedrock-2023-05-31',
-                    'max_tokens': 10,
-                    'messages': [{'role': 'user', 'content': 'ping'}]
-                })
-            )
+            _invoke_bedrock({
+                'anthropic_version': 'bedrock-2023-05-31',
+                'max_tokens': 10,
+                'messages': [{'role': 'user', 'content': 'ping'}]
+            })
             health['bedrock'] = True
         except Exception as e:
             health['bedrock_error'] = str(e)
@@ -72,19 +81,14 @@ def lambda_handler(event, context):
             return {'statusCode': 400, 'headers': HEADERS,
                     'body': json.dumps({'error': 'Üres üzenet'})}
 
-        response = bedrock.invoke_model(
-            modelId=MODEL_ID,
-            contentType='application/json',
-            accept='application/json',
-            body=json.dumps({
-                'anthropic_version': 'bedrock-2023-05-31',
-                'max_tokens': 500,
-                'system': SYSTEM_PROMPT,
-                'messages': [
-                    {'role': 'user', 'content': user_message}
-                ]
-            })
-        )
+        response = _invoke_bedrock({
+            'anthropic_version': 'bedrock-2023-05-31',
+            'max_tokens': 500,
+            'system': SYSTEM_PROMPT,
+            'messages': [
+                {'role': 'user', 'content': user_message}
+            ]
+        })
 
         result = json.loads(response['body'].read())
         reply  = result['content'][0]['text']
@@ -93,9 +97,16 @@ def lambda_handler(event, context):
                 'body': json.dumps({'reply': reply}, ensure_ascii=False)}
 
     except Exception as e:
+        error_text = str(e)
+        if 'on-demand throughput isn’t supported' in error_text or "on-demand throughput isn't supported" in error_text:
+            error_text = (
+                "A kiválasztott modellhez inference profile szükséges. "
+                "Állítsd be a Lambda env var-t: BEDROCK_INFERENCE_PROFILE_ID "
+                "(profile ID vagy ARN), majd Deploy."
+            )
         print(f"HIBA: {e}")
         return {'statusCode': 200, 'headers': HEADERS,
                 'body': json.dumps({
                     'status': 'bedrock_error',
-                    'reply': f'Lambda működik – Bedrock hiba: {str(e)}'
+                    'reply': f'Lambda működik – Bedrock hiba: {error_text}'
                 }, ensure_ascii=False)}
