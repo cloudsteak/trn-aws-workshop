@@ -1,5 +1,21 @@
 // ==================== HEALTH CHECK ====================
+function resetHealth() {
+    const ids = ['health-ec2', 'health-apigw', 'health-lambda-q', 'health-lambda-c', 'health-rds', 'health-bedrock'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const dot = el.querySelector('.h-dot');
+        const txt = el.querySelector('.h-detail');
+        if (dot) dot.className = 'h-dot';
+        if (txt) txt.textContent = 'Ellenőrzés...';
+    });
+}
+
 async function checkHealth() {
+    resetHealth();
+    // Kis szünet, hogy a felhasználó lássa a reset-et
+    await new Promise(r => setTimeout(r, 300));
+
     const components = {
         ec2:       { el: document.getElementById('health-ec2'),       status: true, label: 'EC2 + Apache' },
         apiGw:     { el: document.getElementById('health-apigw'),     status: false, label: 'API Gateway' },
@@ -166,6 +182,11 @@ function filterCategory(btn) {
 
 // ==================== CHATBOT ====================
 let chatOpen = false;
+let chatHistory = JSON.parse(sessionStorage.getItem('chatHistory') || '[]');
+
+function saveChatHistory() {
+    sessionStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+}
 
 function toggleChat() {
     chatOpen = !chatOpen;
@@ -191,6 +212,8 @@ async function sendChat() {
 
     input.value = '';
     addChatMessage(text, 'user');
+    chatHistory.push({ role: 'user', content: text });
+    saveChatHistory();
 
     const typing = addChatMessage('Gondolkodom...', 'ai typing');
     document.getElementById('chatSend').disabled = true;
@@ -199,12 +222,14 @@ async function sendChat() {
         const res = await fetch(CONFIG.CHAT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text })
+            body: JSON.stringify({ message: text, history: chatHistory })
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         typing.remove();
         addChatMessage(data.reply, 'ai');
+        chatHistory.push({ role: 'assistant', content: data.reply });
+        saveChatHistory();
     } catch (e) {
         typing.remove();
         addChatMessage('⚠️ Hiba: ' + e.message + '<br><small>Ellenőrizd a js/config.js beállításokat!</small>', 'ai');
@@ -218,4 +243,9 @@ async function sendChat() {
 document.addEventListener('DOMContentLoaded', () => {
     checkHealth();
     loadAll('');
+
+    // Korábbi chat üzenetek visszatöltése
+    chatHistory.forEach(msg => {
+        addChatMessage(msg.content, msg.role === 'user' ? 'user' : 'ai');
+    });
 });

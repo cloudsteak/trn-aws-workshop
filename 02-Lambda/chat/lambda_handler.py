@@ -34,6 +34,9 @@ HEADERS = {
 }
 
 
+MAX_HISTORY = 20  # Max üzenetek száma a kontextusban
+
+
 def _resolve_model_target():
     return INFERENCE_PROFILE_ID or MODEL_ID
 
@@ -76,18 +79,29 @@ def lambda_handler(event, context):
     try:
         body = json.loads(event.get('body', '{}'))
         user_message = body.get('message', '').strip()
+        history = body.get('history', [])
 
         if not user_message:
             return {'statusCode': 400, 'headers': HEADERS,
                     'body': json.dumps({'error': 'Üres üzenet'})}
 
+        # Konverzáció előzmények összeállítása
+        messages = []
+        for msg in history[-MAX_HISTORY:]:
+            role = msg.get('role', '')
+            content = msg.get('content', '')
+            if role in ('user', 'assistant') and content:
+                messages.append({'role': role, 'content': content})
+
+        # Ha a history-ban nincs benne az aktuális üzenet, hozzáadjuk
+        if not messages or messages[-1].get('content') != user_message:
+            messages.append({'role': 'user', 'content': user_message})
+
         response = _invoke_bedrock({
             'anthropic_version': 'bedrock-2023-05-31',
             'max_tokens': 500,
             'system': SYSTEM_PROMPT,
-            'messages': [
-                {'role': 'user', 'content': user_message}
-            ]
+            'messages': messages
         })
 
         result = json.loads(response['body'].read())
