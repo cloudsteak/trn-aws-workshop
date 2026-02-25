@@ -192,7 +192,8 @@ Lambda → **Layers** → Create layer → Name: `pymysql` → Upload: `pymysql-
 4. **Timeout**: 30 sec
 5. IAM: ⏳ _Az 5. lépésben adjuk hozzá_
 6. Opcionális env var (újabb Claude modellekhez):
-  - `BEDROCK_INFERENCE_PROFILE_ID` = inference profile ID vagy ARN
+
+- `BEDROCK_INFERENCE_PROFILE_ID` = inference profile ID vagy ARN
 
 ---
 
@@ -314,7 +315,7 @@ https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 
 ### 4.4 SQL futtatása DBeaver-ben
 
-1. Bal oldali fa → `quotes-db.mysql.database.azure.com` → Databases
+1. Bal oldali fa → `quotes-db.xxxxx.eu-central-1.rds.amazonaws.com` → Databases
 2. Felül keresd meg az **Open SQL script** gombot – megnyílik egy új SQL editor ablak
 3. Az üres részben kattints jobb gombbal és válaszd a **File** → **Import SQL script** opciót, majd tallózd be a `03-Database/init.sql` fájlt
 4. **Execute SQL script** gombra kattintva az összes parancs lefut
@@ -384,7 +385,9 @@ Vagy minimális policy:
 3. Másold ki az adott modellhez tartozó **Inference profile ARN** értéket
 4. Menj a Lambda → `cloud-chat-api` → **Configuration** → **Environment variables** részre
 5. Add hozzá ezt az env var-t:
-  - `BEDROCK_INFERENCE_PROFILE_ID` = _(az előbb kimásolt Inference profile ARN)_
+
+- `BEDROCK_INFERENCE_PROFILE_ID` = _(az előbb kimásolt Inference profile ARN)_
+
 6. Mentsd el és nyomj **Deploy**-t a Lambda kódra
 
 ### 5.4 Tesztelés
