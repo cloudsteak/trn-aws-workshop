@@ -5,7 +5,7 @@ import boto3
 REGION   = os.environ.get('AWS_REGION', 'eu-central-1')
 MODEL_ID = os.environ.get(
     'BEDROCK_MODEL_ID',
-    'anthropic.claude-3-haiku-20240307-v1:0'
+    'anthropic.claude-haiku-4-5-20251001-v1:0'
 )
 INFERENCE_PROFILE_ID = os.environ.get('BEDROCK_INFERENCE_PROFILE_ID', '').strip()
 

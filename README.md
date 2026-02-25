@@ -189,11 +189,9 @@ Lambda → **Layers** → Create layer → Name: `pymysql` → Upload: `pymysql-
    - Runtime: **Python 3.12**
 2. Create function
 3. Kód: másold be a `02-Lambda/chat/lambda_handler.py` tartalmát
-4. **NEM kell Layer** – a boto3 alapból elérhető
-5. **NEM kell VPC** – a Bedrock publikus endpoint
-6. **Timeout**: 30 sec
-7. IAM: ⏳ _Az 5. lépésben adjuk hozzá_
-8. Opcionális env var (újabb Claude modellekhez):
+4. **Timeout**: 30 sec
+5. IAM: ⏳ _Az 5. lépésben adjuk hozzá_
+6. Opcionális env var (újabb Claude modellekhez):
   - `BEDROCK_INFERENCE_PROFILE_ID` = inference profile ID vagy ARN
 
 ---
@@ -316,12 +314,11 @@ https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 
 ### 4.4 SQL futtatása DBeaver-ben
 
-1. A bal oldali fa struktúrában kattints a `cloudquotes` adatbázisra
-2. **Jobb klikk** → **SQL Editor** → **Open SQL Script**
-3. Nyisd meg az `03-Database/init.sql` fájlt (File → Open File, vagy másold be a tartalmát)
-4. **Fontos**: az editor tetején ellenőrizd, hogy a `cloudquotes` adatbázis van kiválasztva!
-5. **Execute** (▶️ gomb vagy Ctrl+Enter) – az összes parancs lefut
-6. Ellenőrzés: a Results panelen látod a kategóriánkénti darabszámot (5-5-5)
+1. Bal oldali fa → `quotes-db.mysql.database.azure.com` → Databases
+2. Felül keresd meg az **Open SQL script** gombot – megnyílik egy új SQL editor ablak
+3. Az üres részben kattints jobb gombbal és válaszd a **File** → **Import SQL script** opciót, majd tallózd be a `03-Database/init.sql` fájlt
+4. **Execute SQL script** gombra kattintva az összes parancs lefut
+5. Ellenőrzés: a Results panelen látod a kategóriánkénti darabszámot
 
 ### 4.5 ⚠️ Vissza a Lambda-hoz: environment variables
 
@@ -349,7 +346,7 @@ Nyisd meg a webapp-ot a böngészőben: `http://EC2_PUBLIC_IP`
 ### 5.1 Model access engedélyezése
 
 1. **Amazon Bedrock** → **Model catalog** (a bal oldali menüben)
-2. Keresés: **Anthropic** → **Claude 3 Haiku**
+2. Keresés: **Anthropic** → **Claude 4.5 Haiku**
 3. **Request model access** → Enable
 
 > ⚠️ Az Anthropic első használatkor megköveteli a use case leírását:
