@@ -377,14 +377,24 @@ Vagy minimális policy:
 }
 ```
 
-### 5.3 Tesztelés
+### 5.3 Inference profile ARN beállítása (Claude 4.5)
+
+1. Amazon Bedrock-ban nyisd meg a **Cross-region inference** menüpontot
+2. Keresd meg a használt modellt (pl. **Claude 4.5 Haiku**)
+3. Másold ki az adott modellhez tartozó **Inference profile ARN** értéket
+4. Menj a Lambda → `cloud-chat-api` → **Configuration** → **Environment variables** részre
+5. Add hozzá ezt az env var-t:
+  - `BEDROCK_INFERENCE_PROFILE_ID` = _(az előbb kimásolt Inference profile ARN)_
+6. Mentsd el és nyomj **Deploy**-t a Lambda kódra
+
+### 5.4 Tesztelés
 
 Nyisd meg a webapp-ot: `http://EC2_PUBLIC_IP` → jobb alsó sarok 🤖 → kérdezz valamit!
 
 🎉 **Az AI válaszol!** A health dashboard-on a Bedrock is zöldre vált.
 
-> 💡 **Megjegyzés**: A chatbotnak nincs memóriája – minden üzenet független kérés a Bedrock felé.
-> Memóriát (konverzáció-előzmények) DynamoDB-vel lehetne implementálni, de a cél most az volt,
+> 💡 **Megjegyzés**: A chatbotnak csak a böngésző ablak frissítéséig van memóriája.
+> Teljesen független memóriát (konverzáció-előzmények) DynamoDB-vel lehetne implementálni, de a cél most az volt,
 > hogy lássuk milyen **egyszerű egy AI chatbotot összerakni** AWS-en.
 
 ---
