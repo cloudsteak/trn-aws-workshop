@@ -268,7 +268,7 @@ AWS Console → **RDS** → Create database (nem Easy mode)
 | Storage                | 20 GB                                                                        |
 | Public access          | **Yes** ⚠️ (csak képzéshez!)                                                 |
 | Security group         | Create new → `quotes-db-sg`                                                  |
-| Initial database name  | `cloudquotes`                                                                |
+| Initial database name (Additional configuration alatt) | `cloudquotes`                                                                |
 | Initial backup         | Disabled. A bemutató során ne készüljön mentés, hogy ezzel is időt nyerjünk. |
 
 Create database → Várj 5-10 percet.
@@ -372,7 +372,7 @@ Vagy minimális policy:
     {
       "Effect": "Allow",
       "Action": "bedrock:InvokeModel",
-      "Resource": "arn:aws:bedrock:eu-central-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+      "Resource": "arn:aws:bedrock:eu-central-1::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0"
     }
   ]
 }
@@ -380,7 +380,7 @@ Vagy minimális policy:
 
 ### 5.3 Inference profile ARN beállítása (Claude 4.5)
 
-1. Amazon Bedrock-ban nyisd meg a **Cross-region inference** menüpontot
+1. Amazon Bedrock-ban nyisd meg a **Inference profiles** menüpontot
 2. Keresd meg a használt modellt (pl. **Claude 4.5 Haiku**)
 3. Másold ki az adott modellhez tartozó **Inference profile ARN** értéket
 4. Menj a Lambda → `cloud-chat-api` → **Configuration** → **Environment variables** részre
@@ -420,6 +420,7 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 3. **Lambda**: Delete mindkét function + pymysql layer
 4. **API Gateway**: Delete API
 5. **Security Groups**: Töröld az egyedieket
+6. **IAM Role**: Töröld az egyedieket
 
 ---
 
