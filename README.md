@@ -420,6 +420,7 @@ AI Chat:   Böngésző → EC2 Apache → API GW → Lambda → Bedrock Claude
 3. **Lambda**: Delete mindkét function + pymysql layer
 4. **API Gateway**: Delete API
 5. **Security Groups**: Töröld az egyedieket
+6. **IAM Role**: Töröld az egyedieket
 
 ---
 
